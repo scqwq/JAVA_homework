@@ -1,9 +1,5 @@
 package repo.jdbc;
 
-import model.Building;
-import model.BuildingGenderPolicy;
-import repo.interfaces.BuildingRepository;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import model.Building;
+import model.BuildingGenderPolicy;
+import repo.interfaces.BuildingRepository;
+//BR接口包含方法：save、findall、findbyid、findbycode 
+//主要管理Building表 把增删查操作翻译成 SQL 发给数据库。
 public class JdbcBuildingRepository implements BuildingRepository {
     private final Connection connection;
 
@@ -22,7 +23,7 @@ public class JdbcBuildingRepository implements BuildingRepository {
 
     @Override
     public Building save(Building building) throws SQLException {
-        String sql = "INSERT INTO buildings (building_code, building_name, gender_policy) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO buildings (building_code, building_name, gender_policy) VALUES (?, ?, ?)"; //由于结构较简单，不使用ORM
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, building.buildingCode());
             statement.setString(2, building.buildingName());

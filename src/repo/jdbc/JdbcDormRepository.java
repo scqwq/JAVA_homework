@@ -1,8 +1,5 @@
 package repo.jdbc;
 
-import model.DormAssignment;
-import repo.interfaces.DormRepository;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import model.DormAssignment;
+import repo.interfaces.DormRepository;
+
+//管理宿舍分配，包括新生入住、学生调换宿舍
 public class JdbcDormRepository implements DormRepository {
     private final Connection connection;
 

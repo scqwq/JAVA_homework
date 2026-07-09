@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//房间管理员 管理宿舍房间
 public class JdbcRoomRepository implements RoomRepository {
     private final Connection connection;
 

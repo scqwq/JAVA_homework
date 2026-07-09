@@ -1,4 +1,6 @@
 package model;
+//表查询后的完整展示数据 便于业务查询展示使用
+
 public record StudentDormView(
         String studentId, //学号
         String studentName, 

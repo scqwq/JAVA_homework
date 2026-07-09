@@ -1,9 +1,11 @@
 package ui;
 
+import java.sql.SQLException;
+
 import model.Building;
 import service.BuildingService;
 
-import java.sql.SQLException;
+//ui 主要管理与用户交互的终端页面，相当于一个前端，连接业务层
 
 public final class BuildingMenu {
     private BuildingMenu() {

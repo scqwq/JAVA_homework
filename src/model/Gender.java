@@ -1,5 +1,6 @@
 package model;
 
+// “学生性别”的枚举类型
 public enum Gender {
     MALE("男"),
     FEMALE("女");

@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//管理学生信息 
+//赋值跨表查询，把学生和宿舍楼、房间、床位信息拼在一起查出来
 public class JdbcStudentRepository implements StudentRepository {
     private final Connection connection;
 
