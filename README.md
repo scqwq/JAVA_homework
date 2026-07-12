@@ -13,6 +13,11 @@
 
 项目使用接口 + JDBC 实现仓储层多态，当前支持 `PostgreSQL` 和 `MySQL`。
 
+## Maven 目录结构
+
+- Java 源码位于 `src/main/java`
+- SQL 资源位于 `src/main/resources/sql`
+
 ## 快速开始
 
 1. 复制 `.env.example` 为 `.env`

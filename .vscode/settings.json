@@ -1,0 +1,6 @@
+{
+    "java.jdt.ls.java.home": "C:\\Users\\56955\\AppData\\Roaming\\.minecraft\\runtime\\java-runtime-delta",
+    "java.import.maven.enabled": true,
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.errors.incompleteClasspath.severity": "warning"
+}

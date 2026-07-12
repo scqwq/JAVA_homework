@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+//宿舍分配
 public interface DormRepository {
     DormAssignment save(DormAssignment dormAssignment) throws SQLException;
 

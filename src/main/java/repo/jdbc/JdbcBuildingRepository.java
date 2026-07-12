@@ -12,6 +12,9 @@ import java.util.Optional;
 import model.Building;
 import model.BuildingGenderPolicy;
 import repo.interfaces.BuildingRepository;
+
+//jdbc注意负责实际管理底层，包含具体连接和代码的实现
+
 //BR接口包含方法：save、findall、findbyid、findbycode 
 //主要管理Building表 把增删查操作翻译成 SQL 发给数据库。
 public class JdbcBuildingRepository implements BuildingRepository {
@@ -23,9 +26,10 @@ public class JdbcBuildingRepository implements BuildingRepository {
 
     @Override
     public Building save(Building building) throws SQLException {
+        //新增building，具体信息使用"?"作为占位符，再通过setxxx方法，可以把值填进对应的序号的占位符中
         String sql = "INSERT INTO buildings (building_code, building_name, gender_policy) VALUES (?, ?, ?)"; //由于结构较简单，不使用ORM
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, building.buildingCode());
+            statement.setString(1, building.buildingCode());//第一个参数是占位符的位置
             statement.setString(2, building.buildingName());
             statement.setString(3, building.genderPolicy().name());
             statement.executeUpdate();

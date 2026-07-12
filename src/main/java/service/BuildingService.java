@@ -22,6 +22,7 @@ public class BuildingService {
     // 新增宿舍楼：先检查楼号是否重复，再把输入转换成 Building 对象保存到数据库。
     public Building createBuilding(String code, String name, String genderPolicy) throws SQLException {
         databaseConnection.buildingRepository().findByCode(code).ifPresent(existing -> {
+            //Optional是java的工具类，ifpersent是他的一个方法，如果有值则执行action(抛出异常，空则什么都不做)
             throw new IllegalArgumentException("宿舍楼编号已存在: " + code);
         });
         return databaseConnection.buildingRepository().save(
