@@ -1,0 +1,36 @@
+package handler;
+
+import com.sun.net.httpserver.HttpExchange;
+import model.DormAssignment;
+import service.DormService;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
+
+public class DormAssignHandler extends BaseHandler {
+    private final DormService dormService;
+
+    public DormAssignHandler(DormService dormService) {
+        this.dormService = dormService;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        try {
+            ensureMethod(exchange, "POST");
+            Map<String, String> params = formParams(exchange);
+            DormAssignment dormAssignment = dormService.assignDorm(
+                    requireText(params, "studentId", "学号"),
+                    requireLong(params, "buildingId", "宿舍楼 ID"),
+                    requireLong(params, "roomId", "房间 ID"),
+                    requireInt(params, "bedNumber", "床号")
+            );
+            redirect(exchange, "/?message=" + encode("宿舍分配成功，床号: " + dormAssignment.bedNumber()));
+        } catch (IllegalArgumentException exception) {
+            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+        } catch (SQLException exception) {
+            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+        }
+    }
+}
