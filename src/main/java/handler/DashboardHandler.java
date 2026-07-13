@@ -871,28 +871,17 @@ public class DashboardHandler extends BaseHandler {
 
         String buttonClass = secondary ? " class=\"secondary\"" : "";
         return """
-                <form method="post" action="
-                """ + action + """
-                " class="dorm-form """ + formClass + """
-                " data-selected-room-id="
-                """ + escapeHtml(selectedRoomId) + """
-                " id="
-                """ + escapeHtml(sectionId) + """
-                ">
+                <form method="post" action="%s" class="dorm-form %s" data-selected-room-id="%s" id="%s">
                     <input type="hidden" name="tab" value="dorms">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>学号</label>
-                            <input name="studentId" value="
-                """ + escapeHtml(selectedStudentId) + """
-                " placeholder="
-                """ + escapeHtml(studentPlaceholder) + """
-                " required>
+                            <input name="studentId" value="%s" placeholder="%s" required>
                         </div>
                         <div class="form-group">
                             <label>宿舍楼</label>
                             <select name="buildingId" class="building-select" required>
-                                """ + renderBuildingOptionsWithSelected(buildings, selectedBuildingId) + """
+                                %s
                             </select>
                         </div>
                         <div class="form-group">
@@ -909,18 +898,24 @@ public class DashboardHandler extends BaseHandler {
                         </div>
                         <div class="form-group">
                             <label>床号</label>
-                            <input type="number" name="bedNumber" min="1" max="4" value="
-                """ + escapeHtml(selectedBedNumber) + """
-                " required>
+                            <input type="number" name="bedNumber" min="1" max="4" value="%s" required>
                         </div>
                     </div>
-                    <div class="actions"><button type="submit"
-                """ + buttonClass + """
-                >""" + escapeHtml(buttonLabel) + """
-                    </button></div>
+                    <div class="actions"><button type="submit"%s>%s</button></div>
                 </form>
                 <div class="result">先选宿舍楼，再选楼层，最后选择该楼层下的房间。</div>
-                """;
+                """.formatted(
+                action,
+                escapeHtml(formClass),
+                escapeHtml(selectedRoomId),
+                escapeHtml(sectionId),
+                escapeHtml(selectedStudentId),
+                escapeHtml(studentPlaceholder),
+                renderBuildingOptionsWithSelected(buildings, selectedBuildingId),
+                escapeHtml(selectedBedNumber),
+                buttonClass,
+                escapeHtml(buttonLabel)
+        );
     }
 
     private String renderStudentDormResult(StudentDormView dormByStudent) {
