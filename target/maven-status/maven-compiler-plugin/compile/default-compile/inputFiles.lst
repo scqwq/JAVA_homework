@@ -1,27 +1,27 @@
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\database\DatabaseConnection.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\database\DatabaseDialect.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\Main.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\Building.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\BuildingGenderPolicy.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\DormAssignment.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\Gender.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\Room.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\Student.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\StudentDormView.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\interfaces\BuildingRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\interfaces\DormRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\interfaces\RoomRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\interfaces\StudentRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcBuildingRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcDormRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcRoomRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcStudentRepository.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\BuildingService.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\DormService.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\RoomService.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\StudentService.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\ui\BuildingMenu.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\ui\ConsoleUtils.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\ui\DormMenu.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\ui\RoomMenu.java
-D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\ui\StudentMenu.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\database\DatabaseConnection.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\database\DatabaseDialect.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\Main.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Building.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\BuildingGenderPolicy.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\DormAssignment.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Gender.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Room.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Student.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\StudentDormView.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\interfaces\BuildingRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\interfaces\DormRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\interfaces\RoomRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\interfaces\StudentRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\jdbc\JdbcBuildingRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\jdbc\JdbcDormRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\jdbc\JdbcRoomRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\repo\jdbc\JdbcStudentRepository.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\service\BuildingService.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\service\DormService.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\service\RoomService.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\service\StudentService.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\ui\BuildingMenu.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\ui\ConsoleUtils.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\ui\DormMenu.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\ui\RoomMenu.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\ui\StudentMenu.java

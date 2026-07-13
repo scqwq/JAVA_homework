@@ -7,9 +7,10 @@ import database.DatabaseConnection;
 import model.Building;
 import model.BuildingGenderPolicy;
 
-//service主要关注业务层，根据不同要求（链式）调用接口类普通类的方法实现与数据库的交互
-
-// 宿舍楼服务类，负责处理宿舍楼相关的业务逻辑。
+/**
+ * 宿舍楼服务类，负责处理宿舍楼相关的业务逻辑。
+ * service主要关注业务层，根据不同要求（链式）调用接口类普通类的方法实现与数据库的交互
+ */
 public class BuildingService {
     // 持有数据库连接对象，用于访问宿舍楼仓储。
     private final DatabaseConnection databaseConnection;
@@ -22,12 +23,11 @@ public class BuildingService {
     // 新增宿舍楼：先检查楼号是否重复，再把输入转换成 Building 对象保存到数据库。
     public Building createBuilding(String code, String name, String genderPolicy) throws SQLException {
         databaseConnection.buildingRepository().findByCode(code).ifPresent(existing -> {
-            //Optional是java的工具类，ifpersent是他的一个方法，如果有值则执行action(抛出异常，空则什么都不做)
+            // Optional是java的工具类，ifpersent是他的一个方法，如果有值则执行action(抛出异常，空则什么都不做)
             throw new IllegalArgumentException("宿舍楼编号已存在: " + code);
         });
         return databaseConnection.buildingRepository().save(
-                new Building(0L, code, name, BuildingGenderPolicy.fromLabel(genderPolicy))
-        );
+                new Building(0L, code, name, BuildingGenderPolicy.fromLabel(genderPolicy)));
     }
 
     // 查询全部宿舍楼列表，供界面层展示。
@@ -42,4 +42,3 @@ public class BuildingService {
                 .orElseThrow(() -> new IllegalArgumentException("未找到宿舍楼: " + buildingId));
     }
 }
-
