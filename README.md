@@ -9,9 +9,27 @@
 - 根据宿舍查找学生
 - 根据学生查找宿舍
 
-目前实现逻辑/注释还未完成，看得懂JAVA的可以帮忙看看程序逻辑，提提修改意见
-
 项目使用接口 + JDBC 实现仓储层多态，当前支持 `PostgreSQL` 和 `MySQL`。
+
+## 控制台中文编码
+
+如果终端使用 UTF-8 编码（如 VS Code 终端、Git Bash、PowerShell 7+ 等），而程序输出出现乱码，可在运行前设置环境变量：
+
+```bash
+# Windows (PowerShell)
+$env:CONSOLE_ENCODING = "UTF-8"
+.\mvnw.cmd exec:java
+
+# Windows (cmd)
+set CONSOLE_ENCODING=UTF-8
+mvn exec:java
+
+# macOS / Linux / Git Bash
+export CONSOLE_ENCODING=UTF-8
+./mvnw exec:java
+```
+
+在中文 Windows 默认的 GBK 控制台中，通常无需设置此变量。
 
 ## Maven 目录结构
 
