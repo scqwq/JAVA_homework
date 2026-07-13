@@ -36,5 +36,11 @@ public interface RoomRepository {
      * 未找到时返回 Optional.empty()，由调用 Service 决定错误提示。
      */
     Optional<Room> findById(long roomId) throws SQLException;
+
+    /**
+     * 给 RoomService 按楼栋、楼层和房间号定位具体房间。
+     * 适合“用户知道物理位置但不知道房间 ID”的查询场景。
+     */
+    Optional<Room> findByBuildingFloorAndRoomNumber(long buildingId, int floorNumber, String roomNumber) throws SQLException;
 }
 

@@ -22,8 +22,8 @@ public class DormAssignHandler extends BaseHandler {
             Map<String, String> params = formParams(exchange);
             DormAssignment dormAssignment = dormService.assignDorm(
                     requireText(params, "studentId", "学号"),
-                    requireLong(params, "buildingId", "宿舍楼 ID"),
-                    requireLong(params, "roomId", "房间 ID"),
+                    requireLong(params, "buildingId", "请选择宿舍楼"),
+                    requireLong(params, "roomId", "请选择房间"),
                     requireInt(params, "bedNumber", "床号")
             );
             redirect(exchange, "/?message=" + encode("宿舍分配成功，床号: " + dormAssignment.bedNumber()));

@@ -84,6 +84,19 @@ public class JdbcRoomRepository implements RoomRepository {
         }
     }
 
+    @Override
+    public Optional<Room> findByBuildingFloorAndRoomNumber(long buildingId, int floorNumber, String roomNumber) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT room_id, room_number, building_id, floor_number FROM rooms WHERE building_id = ? AND floor_number = ? AND room_number = ?")) {
+            statement.setLong(1, buildingId);
+            statement.setInt(2, floorNumber);
+            statement.setString(3, roomNumber);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? Optional.of(map(resultSet)) : Optional.empty();
+            }
+        }
+    }
+
     private Room map(ResultSet resultSet) throws SQLException {
         // 集中完成 records 与表字段的对应，调用方始终只接触 Room 领域对象。
         return new Room(

@@ -54,4 +54,18 @@ public class RoomService {
                 .findById(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("未找到宿舍房间: " + roomId));
     }
+
+    // 根据宿舍楼、楼层和房间号查询房间，适合按物理位置检索。
+    public Room getRoomByLocation(long buildingId, int floorNumber, String roomNumber) throws SQLException {
+        buildingService.getBuilding(buildingId);
+        if (floorNumber < 1) {
+            throw new IllegalArgumentException("楼层必须大于等于 1");
+        }
+        if (roomNumber == null || roomNumber.isBlank()) {
+            throw new IllegalArgumentException("房间号不能为空");
+        }
+        return databaseConnection.roomRepository()
+                .findByBuildingFloorAndRoomNumber(buildingId, floorNumber, roomNumber.trim())
+                .orElseThrow(() -> new IllegalArgumentException("未找到对应房间，请确认宿舍楼、楼层和房间号是否正确"));
+    }
 }

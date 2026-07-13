@@ -12,6 +12,8 @@ import service.StudentService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,22 +37,38 @@ public class DashboardHandler extends BaseHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        Map<String, String> query = queryParams(exchange);
+        List<Building> buildings = List.of();
+        List<Room> rooms = List.of();
+        List<Student> students = List.of();
+        StudentDormView dormByStudent = null;
+        List<StudentDormView> studentsByRoom = List.of();
+        Room roomByLocation = null;
         try {
             ensureMethod(exchange, "GET");
-            Map<String, String> query = queryParams(exchange);
-            List<Building> buildings = buildingService.listBuildings();
-            List<Room> rooms = roomService.listRooms();
-            List<Student> students = studentService.listStudents();
+            buildings = buildingService.listBuildings();
+            rooms = roomService.listRooms();
+            students = studentService.listStudents();
 
-            StudentDormView dormByStudent = null;
             if (!query.getOrDefault("lookupStudentId", "").isBlank()) {
                 dormByStudent = dormService.findDormByStudent(query.get("lookupStudentId").trim());
             }
 
-            List<StudentDormView> studentsByRoom = List.of();
             String lookupRoomId = query.getOrDefault("lookupRoomId", "").trim();
             if (!lookupRoomId.isBlank()) {
                 studentsByRoom = dormService.findStudentsByRoom(Long.parseLong(lookupRoomId));
+            }
+
+            String lookupBuildingId = query.getOrDefault("lookupBuildingId", "").trim();
+            String lookupFloorNumber = query.getOrDefault("lookupFloorNumber", "").trim();
+            String lookupRoomNumber = query.getOrDefault("lookupRoomNumber", "").trim();
+            if (!lookupBuildingId.isBlank() || !lookupFloorNumber.isBlank() || !lookupRoomNumber.isBlank()) {
+                roomByLocation = roomService.getRoomByLocation(
+                        Long.parseLong(lookupBuildingId),
+                        Integer.parseInt(lookupFloorNumber),
+                        lookupRoomNumber
+                );
+                studentsByRoom = dormService.findStudentsByRoom(roomByLocation.roomId());
             }
 
             sendHtml(exchange, 200, renderPage(
@@ -62,12 +80,66 @@ public class DashboardHandler extends BaseHandler {
                     dormByStudent,
                     studentsByRoom,
                     query.getOrDefault("lookupStudentId", ""),
-                    lookupRoomId
+                    lookupRoomId,
+                    roomByLocation,
+                    lookupBuildingId,
+                    lookupFloorNumber,
+                    lookupRoomNumber,
+                    query.getOrDefault("changeStudentId", ""),
+                    query.getOrDefault("changeBuildingId", ""),
+                    query.getOrDefault("changeRoomId", ""),
+                    query.getOrDefault("changeBedNumber", "")
             ));
         } catch (IllegalArgumentException exception) {
-            sendHtml(exchange, 400, renderErrorPage(exception.getMessage()));
+            if (buildings.isEmpty() && rooms.isEmpty() && students.isEmpty()) {
+                try {
+                    buildings = buildingService.listBuildings();
+                    rooms = roomService.listRooms();
+                    students = studentService.listStudents();
+                } catch (SQLException sqlException) {
+                    sendHtml(exchange, 500, renderErrorPage("数据库操作失败: " + sqlException.getMessage()));
+                    return;
+                }
+            }
+            sendHtml(exchange, 400, renderPage(
+                    query.getOrDefault("message", ""),
+                    exception.getMessage(),
+                    buildings,
+                    rooms,
+                    students,
+                    dormByStudent,
+                    studentsByRoom,
+                    query.getOrDefault("lookupStudentId", ""),
+                    query.getOrDefault("lookupRoomId", ""),
+                    roomByLocation,
+                    query.getOrDefault("lookupBuildingId", ""),
+                    query.getOrDefault("lookupFloorNumber", ""),
+                    query.getOrDefault("lookupRoomNumber", ""),
+                    query.getOrDefault("changeStudentId", ""),
+                    query.getOrDefault("changeBuildingId", ""),
+                    query.getOrDefault("changeRoomId", ""),
+                    query.getOrDefault("changeBedNumber", "")
+            ));
         } catch (SQLException exception) {
-            sendHtml(exchange, 500, renderErrorPage("数据库操作失败: " + exception.getMessage()));
+            sendHtml(exchange, 500, renderPage(
+                    query.getOrDefault("message", ""),
+                    "数据库操作失败: " + exception.getMessage(),
+                    buildings,
+                    rooms,
+                    students,
+                    dormByStudent,
+                    studentsByRoom,
+                    query.getOrDefault("lookupStudentId", ""),
+                    query.getOrDefault("lookupRoomId", ""),
+                    roomByLocation,
+                    query.getOrDefault("lookupBuildingId", ""),
+                    query.getOrDefault("lookupFloorNumber", ""),
+                    query.getOrDefault("lookupRoomNumber", ""),
+                    query.getOrDefault("changeStudentId", ""),
+                    query.getOrDefault("changeBuildingId", ""),
+                    query.getOrDefault("changeRoomId", ""),
+                    query.getOrDefault("changeBedNumber", "")
+            ));
         }
     }
 
@@ -80,7 +152,15 @@ public class DashboardHandler extends BaseHandler {
             StudentDormView dormByStudent,
             List<StudentDormView> studentsByRoom,
             String lookupStudentId,
-            String lookupRoomId
+            String lookupRoomId,
+            Room roomByLocation,
+            String lookupBuildingId,
+            String lookupFloorNumber,
+            String lookupRoomNumber,
+            String changeStudentId,
+            String changeBuildingId,
+            String changeRoomId,
+            String changeBedNumber
     ) {
         StringBuilder html = new StringBuilder("""
                 <!DOCTYPE html>
@@ -234,12 +314,28 @@ public class DashboardHandler extends BaseHandler {
         html.append(renderBuildingForm(buildings));
         html.append(renderRoomForm(buildings));
         html.append(renderAssignForm(buildings, rooms));
-        html.append(renderChangeForm(buildings, rooms));
+        html.append(renderChangeForm(
+                buildings,
+                rooms,
+                changeStudentId,
+                changeBuildingId,
+                changeRoomId,
+                changeBedNumber
+        ));
         html.append(renderStudentLookupForm(lookupStudentId, dormByStudent));
-        html.append(renderRoomLookupForm(lookupRoomId, studentsByRoom));
+        html.append(renderRoomLookupForm(
+                buildings,
+                lookupRoomId,
+                studentsByRoom,
+                roomByLocation,
+                lookupBuildingId,
+                lookupFloorNumber,
+                lookupRoomNumber
+        ));
         html.append(renderStudentTable(students));
         html.append(renderBuildingTable(buildings));
         html.append(renderRoomTable(rooms, buildings));
+        html.append(renderFormScript());
         html.append("""
                     </div>
                 </div>
@@ -291,61 +387,77 @@ public class DashboardHandler extends BaseHandler {
     }
 
     private String renderRoomForm(List<Building> buildings) {
-        StringBuilder options = new StringBuilder();
-        for (Building building : buildings) {
-            options.append("<option value=\"")
-                    .append(building.buildingId())
-                    .append("\">")
-                    .append(escapeHtml(building.buildingCode()))
-                    .append(" - ")
-                    .append(escapeHtml(building.buildingName()))
-                    .append("</option>");
+        if (buildings.isEmpty()) {
+            return """
+                    <section class="card">
+                        <h2>新增房间</h2>
+                        <div class="result">请先创建宿舍楼，再为楼栋添加房间。</div>
+                    </section>
+                    """;
         }
-        return """
+
+        StringBuilder html = new StringBuilder();
+        html.append("""
                 <section class="card">
                     <h2>新增房间</h2>
                     <form method="post" action="/rooms/create">
                         <label>房间号<input name="roomNumber" placeholder="例如 101" required></label>
                         <label>所属宿舍楼
-                            <select name="buildingId">
-                """ + options + """
+                            <select name="buildingId" required>
+                """);
+        appendBuildingOptions(html, buildings, "请选择宿舍楼");
+        html.append("""
                             </select>
                         </label>
                         <label>楼层<input type="number" name="floorNumber" min="1" placeholder="例如 1" required></label>
                         <button type="submit">创建房间</button>
                     </form>
                 </section>
-                """;
+                """);
+        return html.toString();
     }
 
     private String renderAssignForm(List<Building> buildings, List<Room> rooms) {
-        return """
-                <section class="card">
-                    <h2>分配宿舍</h2>
-                    <form method="post" action="/dorms/assign">
-                        <label>学号<input name="studentId" placeholder="输入已存在的学号" required></label>
-                        """ + renderBuildingSelect(buildings, "buildingId") + """
-                        """ + renderRoomSelect(rooms, "roomId") + """
-                        <label>床号<input type="number" name="bedNumber" min="1" max="4" required></label>
-                        <button type="submit">分配床位</button>
-                    </form>
-                </section>
-                """;
+        return renderDormForm(
+                "分配宿舍",
+                "/dorms/assign",
+                "assign-form",
+                "输入已存在的学号",
+                "分配床位",
+                "当前没有宿舍楼，请先创建宿舍楼和房间，再进行分配。",
+                buildings,
+                rooms,
+                "assign-dorm",
+                "",
+                "",
+                "",
+                ""
+        );
     }
 
-    private String renderChangeForm(List<Building> buildings, List<Room> rooms) {
-        return """
-                <section class="card">
-                    <h2>调换宿舍</h2>
-                    <form method="post" action="/dorms/change">
-                        <label>学号<input name="studentId" placeholder="输入已入住的学号" required></label>
-                        """ + renderBuildingSelect(buildings, "buildingId") + """
-                        """ + renderRoomSelect(rooms, "roomId") + """
-                        <label>新床号<input type="number" name="bedNumber" min="1" max="4" required></label>
-                        <button type="submit">提交调宿</button>
-                    </form>
-                </section>
-                """;
+    private String renderChangeForm(
+            List<Building> buildings,
+            List<Room> rooms,
+            String studentId,
+            String buildingId,
+            String roomId,
+            String bedNumber
+    ) {
+        return renderDormForm(
+                "调换宿舍",
+                "/dorms/change",
+                "change-form",
+                "输入已入住的学号",
+                "提交调宿",
+                "当前没有可调换的宿舍资源，请先创建宿舍楼和房间。",
+                buildings,
+                rooms,
+                "change-dorm",
+                studentId,
+                buildingId,
+                roomId,
+                bedNumber
+        );
     }
 
     private String renderStudentLookupForm(String lookupStudentId, StudentDormView dormByStudent) {
@@ -360,9 +472,9 @@ public class DashboardHandler extends BaseHandler {
                     .append("</div>");
         }
         return """
-                <section class="card">
+                <section class="card" id="student-lookup">
                     <h2>按学号查宿舍</h2>
-                    <form method="get" action="/">
+                    <form method="get" action="/#student-lookup">
                         <label>学号<input name="lookupStudentId" value="
                 """ + escapeHtml(lookupStudentId) + """
                 " placeholder="例如 20240001" required></label>
@@ -373,10 +485,24 @@ public class DashboardHandler extends BaseHandler {
                 """;
     }
 
-    private String renderRoomLookupForm(String lookupRoomId, List<StudentDormView> studentsByRoom) {
+    private String renderRoomLookupForm(
+            List<Building> buildings,
+            String lookupRoomId,
+            List<StudentDormView> studentsByRoom,
+            Room roomByLocation,
+            String lookupBuildingId,
+            String lookupFloorNumber,
+            String lookupRoomNumber
+    ) {
         StringBuilder result = new StringBuilder();
-        if (!lookupRoomId.isBlank()) {
+        if (!lookupRoomId.isBlank() || roomByLocation != null) {
             result.append("<div class=\"result\">");
+            if (roomByLocation != null) {
+                result.append("当前查询房间：房间 ID ").append(roomByLocation.roomId())
+                        .append(" / 楼层 ").append(roomByLocation.floorNumber())
+                        .append(" / 房间号 ").append(escapeHtml(roomByLocation.roomNumber()))
+                        .append("<br>");
+            }
             if (studentsByRoom.isEmpty()) {
                 result.append("当前房间暂无学生入住。");
             } else {
@@ -391,18 +517,42 @@ public class DashboardHandler extends BaseHandler {
             }
             result.append("</div>");
         }
-        return """
-                <section class="card">
+
+        StringBuilder html = new StringBuilder();
+        html.append("""
+                <section class="card" id="room-lookup">
                     <h2>按房间查学生</h2>
-                    <form method="get" action="/">
+                    <form method="get" action="/#room-lookup">
                         <label>房间 ID<input name="lookupRoomId" value="
-                """ + escapeHtml(lookupRoomId) + """
-                " placeholder="例如 1" required></label>
-                        <button type="submit">查询入住名单</button>
+                """).append(escapeHtml(lookupRoomId)).append("""
+                " placeholder="例如 1"></label>
+                        <button type="submit">按房间 ID 查询</button>
                     </form>
-                """ + result + """
+                """);
+
+        html.append("""
+                    <form method="get" action="/#room-lookup">
+                        <label>所属宿舍楼
+                            <select name="lookupBuildingId" required>
+                """);
+        appendBuildingOptionsWithSelected(html, buildings, "请选择宿舍楼", lookupBuildingId);
+        html.append("""
+                            </select>
+                        </label>
+                        <label>楼层<input type="number" name="lookupFloorNumber" min="1" value="
+                """).append(escapeHtml(lookupFloorNumber)).append("""
+                " placeholder="例如 3" required></label>
+                        <label>房间号<input name="lookupRoomNumber" value="
+                """).append(escapeHtml(lookupRoomNumber)).append("""
+                " placeholder="例如 301" required></label>
+                        <button type="submit">按楼层和房间号查询</button>
+                    </form>
+                """);
+
+        html.append(result).append("""
                 </section>
-                """;
+                """);
+        return html.toString();
     }
 
     private String renderStudentTable(List<Student> students) {
@@ -464,7 +614,7 @@ public class DashboardHandler extends BaseHandler {
     }
 
     private String renderRoomTable(List<Room> rooms, List<Building> buildings) {
-        Map<Long, Building> buildingsById = new java.util.HashMap<>();
+        Map<Long, Building> buildingsById = new HashMap<>();
         for (Building building : buildings) {
             buildingsById.put(building.buildingId(), building);
         }
@@ -497,48 +647,186 @@ public class DashboardHandler extends BaseHandler {
                 """;
     }
 
-    private String renderBuildingSelect(List<Building> buildings, String fieldName) {
-        StringBuilder options = new StringBuilder();
+    private String renderDormForm(
+            String title,
+            String action,
+            String formClass,
+            String studentPlaceholder,
+            String buttonLabel,
+            String emptyMessage,
+            List<Building> buildings,
+            List<Room> rooms,
+            String sectionId,
+            String selectedStudentId,
+            String selectedBuildingId,
+            String selectedRoomId,
+            String selectedBedNumber
+    ) {
+        if (buildings.isEmpty()) {
+            return "<section class=\"card\" id=\"" + escapeHtml(sectionId) + "\"><h2>" + escapeHtml(title)
+                    + "</h2><div class=\"result\">" + escapeHtml(emptyMessage) + "</div></section>";
+        }
+
+        Map<Long, List<Room>> roomsByBuilding = groupRoomsByBuilding(rooms);
+        StringBuilder html = new StringBuilder();
+        html.append("<section class=\"card\" id=\"").append(escapeHtml(sectionId)).append("\">");
+        html.append("<h2>").append(escapeHtml(title)).append("</h2>");
+        html.append("<form method=\"post\" action=\"").append(action).append("\" class=\"dorm-form ")
+                .append(formClass).append("\" data-selected-room-id=\"").append(escapeHtml(selectedRoomId)).append("\">");
+        html.append("<label>学号<input name=\"studentId\" placeholder=\"").append(escapeHtml(studentPlaceholder))
+                .append("\" value=\"").append(escapeHtml(selectedStudentId)).append("\" required></label>");
+        html.append("<label>宿舍楼<select name=\"buildingId\" class=\"building-select\" required>");
+        appendBuildingOptionsWithSelected(html, buildings, "请选择宿舍楼", selectedBuildingId);
+        html.append("</select></label>");
+        html.append("<label>房间");
+        html.append("<select name=\"roomId\" class=\"room-select\" required disabled>");
+        html.append("<option value=\"\">请先选择宿舍楼</option>");
+        html.append("</select></label>");
+        html.append("<label>床号<input type=\"number\" name=\"bedNumber\" min=\"1\" max=\"4\" value=\"")
+                .append(escapeHtml(selectedBedNumber)).append("\" required></label>");
+        html.append("<button type=\"submit\">").append(escapeHtml(buttonLabel)).append("</button>");
+        html.append("</form>");
+
+        if (rooms.isEmpty()) {
+            html.append("<div class=\"result\">当前还没有房间，请先给宿舍楼添加房间。</div>");
+        } else {
+            html.append("<div class=\"result\">");
+            html.append("先选宿舍楼，再选该楼栋下的房间。");
+            for (Building building : buildings) {
+                int roomCount = roomsByBuilding.getOrDefault(building.buildingId(), List.of()).size();
+                html.append("<br>").append(escapeHtml(building.buildingName()))
+                        .append("：").append(roomCount).append(" 个房间");
+            }
+            html.append("</div>");
+        }
+
+        html.append("</section>");
+        return html.toString();
+    }
+
+    private void appendBuildingOptions(StringBuilder html, List<Building> buildings, String placeholder) {
+        html.append("<option value=\"\">").append(escapeHtml(placeholder)).append("</option>");
         for (Building building : buildings) {
-            options.append("<option value=\"")
-                    .append(building.buildingId())
-                    .append("\">")
+            html.append("<option value=\"").append(building.buildingId()).append("\">")
                     .append(escapeHtml(building.buildingCode()))
                     .append(" - ")
                     .append(escapeHtml(building.buildingName()))
                     .append("</option>");
         }
+    }
+
+    private void appendBuildingOptionsWithSelected(
+            StringBuilder html,
+            List<Building> buildings,
+            String placeholder,
+            String selectedBuildingId
+    ) {
+        html.append("<option value=\"\">").append(escapeHtml(placeholder)).append("</option>");
+        for (Building building : buildings) {
+            html.append("<option value=\"").append(building.buildingId()).append("\"");
+            if (String.valueOf(building.buildingId()).equals(selectedBuildingId)) {
+                html.append(" selected");
+            }
+            html.append(">")
+                    .append(escapeHtml(building.buildingCode()))
+                    .append(" - ")
+                    .append(escapeHtml(building.buildingName()))
+                    .append("</option>");
+        }
+    }
+
+    private Map<Long, List<Room>> groupRoomsByBuilding(List<Room> rooms) {
+        Map<Long, List<Room>> roomsByBuilding = new HashMap<>();
+        for (Room room : rooms) {
+            roomsByBuilding.computeIfAbsent(room.buildingId(), ignored -> new ArrayList<>()).add(room);
+        }
+        return roomsByBuilding;
+    }
+
+    private String renderFormScript() {
         return """
-                <label>宿舍楼
-                    <select name="
-                """ + fieldName + """
-                ">
-                """ + options + """
-                    </select>
-                </label>
+                <script>
+                    const roomMap = {
+                """ + buildRoomMapJson() + """
+                    };
+
+                    if (window.location.hash) {
+                        const target = document.querySelector(window.location.hash);
+                        if (target) {
+                            target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                    }
+
+                    document.querySelectorAll(".dorm-form").forEach((form) => {
+                        const buildingSelect = form.querySelector(".building-select");
+                        const roomSelect = form.querySelector(".room-select");
+                        const selectedRoomId = form.dataset.selectedRoomId || "";
+
+                        const syncRooms = () => {
+                            const buildingId = buildingSelect.value;
+                            const rooms = roomMap[buildingId] || [];
+                            roomSelect.innerHTML = "";
+
+                            if (!buildingId) {
+                                roomSelect.disabled = true;
+                                roomSelect.innerHTML = '<option value="">请先选择宿舍楼</option>';
+                                return;
+                            }
+
+                            if (rooms.length === 0) {
+                                roomSelect.disabled = true;
+                                roomSelect.innerHTML = '<option value="">该宿舍楼下暂无房间</option>';
+                                return;
+                            }
+
+                            roomSelect.disabled = false;
+                            roomSelect.innerHTML = '<option value="">请选择房间</option>';
+                            rooms.forEach((room) => {
+                                const option = document.createElement("option");
+                                option.value = room.id;
+                                option.textContent = room.label;
+                                if (selectedRoomId && selectedRoomId === room.id) {
+                                    option.selected = true;
+                                }
+                                roomSelect.appendChild(option);
+                            });
+                        };
+
+                        buildingSelect.addEventListener("change", syncRooms);
+                        syncRooms();
+                    });
+                </script>
                 """;
     }
 
-    private String renderRoomSelect(List<Room> rooms, String fieldName) {
-        StringBuilder options = new StringBuilder();
-        for (Room room : rooms) {
-            options.append("<option value=\"")
-                    .append(room.roomId())
-                    .append("\">房间 ID ")
-                    .append(room.roomId())
-                    .append(" / 房间号 ")
-                    .append(escapeHtml(room.roomNumber()))
-                    .append("</option>");
+    private String buildRoomMapJson() {
+        try {
+            List<Room> rooms = roomService.listRooms();
+            Map<Long, List<Room>> roomsByBuilding = groupRoomsByBuilding(rooms);
+            StringBuilder json = new StringBuilder();
+            boolean firstBuilding = true;
+            for (Map.Entry<Long, List<Room>> entry : roomsByBuilding.entrySet()) {
+                if (!firstBuilding) {
+                    json.append(",");
+                }
+                firstBuilding = false;
+                json.append("\"").append(entry.getKey()).append("\":[");
+                boolean firstRoom = true;
+                for (Room room : entry.getValue()) {
+                    if (!firstRoom) {
+                        json.append(",");
+                    }
+                    firstRoom = false;
+                    json.append("{\"id\":\"").append(room.roomId()).append("\",\"label\":\"房间 ID ")
+                            .append(room.roomId()).append(" / 房间号 ")
+                            .append(escapeJs(room.roomNumber())).append("\"}");
+                }
+                json.append("]");
+            }
+            return json.toString();
+        } catch (SQLException exception) {
+            return "";
         }
-        return """
-                <label>房间
-                    <select name="
-                """ + fieldName + """
-                ">
-                """ + options + """
-                    </select>
-                </label>
-                """;
     }
 
     private String renderErrorPage(String error) {
@@ -559,5 +847,11 @@ public class DashboardHandler extends BaseHandler {
 
     private String nullToDash(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private String escapeJs(String value) {
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
     }
 }
