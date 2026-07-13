@@ -48,6 +48,23 @@ chmod +x mvnw
 
 程序启动时会自动建表。`mvnw` / `mvnw.cmd` 首次运行时会从 `.mvn/wrapper/maven-wrapper.properties` 指定的地址下载 Maven，因此第一次执行需要联网。
 
+## 演示数据
+
+程序首次启动会自动建表，但不会自动导入演示数据。建表后可手动执行
+`src/main/resources/sql/init.sql`；脚本可重复执行，不会重复插入相同的演示记录。
+
+PostgreSQL：
+
+```powershell
+psql -h 127.0.0.1 -U postgres -d JAVA -f src/main/resources/sql/init.sql
+```
+
+MySQL：
+
+```bash
+mysql -h 127.0.0.1 -u root -p JAVA < src/main/resources/sql/init.sql
+```
+
 ## 表结构设计
 
 - `buildings`

@@ -13,10 +13,12 @@ import model.Building;
 import model.BuildingGenderPolicy;
 import repo.interfaces.BuildingRepository;
 
-//jdbc注意负责实际管理底层，包含具体连接和代码的实现
-
-//BR接口包含方法：save、findall、findbyid、findbycode 
-//主要管理Building表 把增删查操作翻译成 SQL 发给数据库。
+/**
+ * {@link BuildingRepository} 的 JDBC 实现。
+ * <p>
+ * 给 BuildingService 提供宿舍楼持久化能力：业务层传入领域对象或查询条件，
+ * 本类负责在 buildings 表完成映射；楼号重复时如何提示、是否允许创建仍由业务层决定。
+ */
 public class JdbcBuildingRepository implements BuildingRepository {
     private final Connection connection;
 
@@ -26,8 +28,8 @@ public class JdbcBuildingRepository implements BuildingRepository {
 
     @Override
     public Building save(Building building) throws SQLException {
-        //新增building，具体信息使用"?"作为占位符，再通过setxxx方法，可以把值填进对应的序号的占位符中
-        String sql = "INSERT INTO buildings (building_code, building_name, gender_policy) VALUES (?, ?, ?)"; //由于结构较简单，不使用ORM
+        // BuildingService 已完成重复楼号校验；这里仅把领域字段写入对应表列。
+        String sql = "INSERT INTO buildings (building_code, building_name, gender_policy) VALUES (?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, building.buildingCode());//第一个参数是占位符的位置
             statement.setString(2, building.buildingName());
@@ -35,6 +37,7 @@ public class JdbcBuildingRepository implements BuildingRepository {
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 keys.next();
+                // 将数据库生成的 ID 回填给业务层，UI 才能展示可继续使用的宿舍楼 ID。
                 return new Building(keys.getLong(1), building.buildingCode(), building.buildingName(), building.genderPolicy());
             }
         }
@@ -44,6 +47,7 @@ public class JdbcBuildingRepository implements BuildingRepository {
     public List<Building> findAll() throws SQLException {
         List<Building> buildings = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(
+                // 列表按主键稳定排序，BuildingService 不需要了解底层排序规则即可直接交给 UI 展示。
                 "SELECT building_id, building_code, building_name, gender_policy FROM buildings ORDER BY building_id");
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -59,6 +63,7 @@ public class JdbcBuildingRepository implements BuildingRepository {
                 "SELECT building_id, building_code, building_name, gender_policy FROM buildings WHERE building_id = ?")) {
             statement.setLong(1, buildingId);
             try (ResultSet resultSet = statement.executeQuery()) {
+                // 空结果交还 BuildingService 决定是报“未找到”还是走其他业务分支。
                 return resultSet.next() ? Optional.of(map(resultSet)) : Optional.empty();
             }
         }
@@ -70,12 +75,14 @@ public class JdbcBuildingRepository implements BuildingRepository {
                 "SELECT building_id, building_code, building_name, gender_policy FROM buildings WHERE building_code = ?")) {
             statement.setString(1, buildingCode);
             try (ResultSet resultSet = statement.executeQuery()) {
+                // 新增前的重复检查只需要存在性信息，业务层再决定是否拒绝保存。
                 return resultSet.next() ? Optional.of(map(resultSet)) : Optional.empty();
             }
         }
     }
 
     private Building map(ResultSet resultSet) throws SQLException {
+        // 表中保存枚举常量名；转换集中在这里，避免向 BuildingService 泄露存储格式。
         return new Building(
                 resultSet.getLong("building_id"),
                 resultSet.getString("building_code"),

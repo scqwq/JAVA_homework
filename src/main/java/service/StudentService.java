@@ -19,6 +19,9 @@ public class StudentService {
         if (studentId.isBlank()) {
             throw new IllegalArgumentException("学号不能为空");
         }
+        databaseConnection.studentRepository().findById(studentId).ifPresent(existing -> {
+            throw new IllegalArgumentException("学号已存在: " + studentId);
+        });
         return databaseConnection.studentRepository().save(
                 new Student(studentId, name, className, grade, Gender.fromLabel(gender))
         );

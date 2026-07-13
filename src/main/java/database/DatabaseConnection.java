@@ -119,22 +119,42 @@ public final class DatabaseConnection implements AutoCloseable {
         }
     }
 
-    /** @return 宿舍楼仓储实例 */
+    /**
+     * 供 BuildingService 获取宿舍楼数据访问入口。
+     * 连接和 JDBC 实现由本类统一持有，业务层只依赖 BuildingRepository 约定。
+     *
+     * @return 与当前数据库连接绑定的宿舍楼仓储
+     */
     public BuildingRepository buildingRepository() {
         return buildingRepository;
     }
 
-    /** @return 宿舍房间仓储实例 */
+    /**
+     * 供 RoomService 获取房间数据访问入口。
+     * 如果 DormService 需要房间信息，应通过 RoomService 保持业务校验边界，不直接处理 JDBC 连接。
+     *
+     * @return 与当前数据库连接绑定的房间仓储
+     */
     public RoomRepository roomRepository() {
         return roomRepository;
     }
 
-    /** @return 学生仓储实例 */
+    /**
+     * 供 StudentService 获取学生及学生宿舍视图的数据访问入口。
+     * DormService 复用学生信息时同样通过 StudentService 组织业务语义。
+     *
+     * @return 与当前数据库连接绑定的学生仓储
+     */
     public StudentRepository studentRepository() {
         return studentRepository;
     }
 
-    /** @return 宿舍分配仓储实例 */
+    /**
+     * 供 DormService 获取入住和调宿的数据访问入口。
+     * 仓储只保存分配结果，分配规则和面向用户的错误信息仍由 DormService 负责。
+     *
+     * @return 与当前数据库连接绑定的宿舍分配仓储
+     */
     public DormRepository dormRepository() {
         return dormRepository;
     }

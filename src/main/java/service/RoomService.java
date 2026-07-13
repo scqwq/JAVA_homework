@@ -20,6 +20,11 @@ public class RoomService {
         if (floorNumber < 1) {
             throw new IllegalArgumentException("楼层必须大于等于 1");
         }
+        boolean roomExists = databaseConnection.roomRepository().findByBuildingId(buildingId).stream()
+                .anyMatch(room -> room.roomNumber().equals(roomNumber));
+        if (roomExists) {
+            throw new IllegalArgumentException("该宿舍楼内房间号已存在: " + roomNumber);
+        }
         return databaseConnection.roomRepository().save(new Room(0L, roomNumber, buildingId, floorNumber));
     }
 
