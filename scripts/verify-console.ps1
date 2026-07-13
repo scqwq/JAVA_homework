@@ -99,6 +99,7 @@ try {
     $m1BuildingId = Get-Scalar "SELECT building_id FROM buildings WHERE building_code = 'M1'"
     $f1RoomId = Get-Scalar "SELECT r.room_id FROM rooms r JOIN buildings b ON b.building_id = r.building_id WHERE b.building_code = 'F1' AND r.room_number = '101'"
     $m1RoomId = Get-Scalar "SELECT r.room_id FROM rooms r JOIN buildings b ON b.building_id = r.building_id WHERE b.building_code = 'M1' AND r.room_number = '101'"
+    $m1Room201Id = Get-Scalar "SELECT r.room_id FROM rooms r JOIN buildings b ON b.building_id = r.building_id WHERE b.building_code = 'M1' AND r.room_number = '201'"
 
     $inputLines = @(
         'abc',
@@ -109,6 +110,13 @@ try {
         '1', '20240005', $m1BuildingId, $m1RoomId, '1', '',
         '1', '20240006', $m1BuildingId, $m1RoomId, '4', '',
         '1', '20240005', $m1BuildingId, $f1RoomId, '3', '',
+        '1', '20240005', $m1BuildingId, $m1RoomId, '3', '',
+        '2', '20240005', $m1BuildingId, $m1Room201Id, '1', '',
+        '0',
+        '1', '1', '20249999', 'RegressionStudent', 'TestClass', '2024', 'MALE', '',
+        '1', '20249999', 'DuplicateStudent', 'TestClass', '2024', 'MALE', '',
+        '0',
+        '3', '1', '101', $m1BuildingId, '1', '',
         '0', '0'
     )
 
@@ -129,11 +137,19 @@ try {
         (Convert-CodePoints @(0x8BE5, 0x5E8A, 0x4F4D, 0x5DF2, 0x88AB, 0x5360, 0x7528)),
         (Convert-CodePoints @(0x8BE5, 0x5BBF, 0x820D, 0x697C, 0x4E0D, 0x5141, 0x8BB8, 0x5F53, 0x524D, 0x5B66, 0x751F, 0x6027, 0x522B, 0x5165, 0x4F4F)),
         (Convert-CodePoints @(0x623F, 0x95F4, 0x4E0D, 0x5C5E, 0x4E8E, 0x8BE5, 0x5BBF, 0x820D, 0x697C)),
+        (Convert-CodePoints @(0x5206, 0x914D, 0x6210, 0x529F, 0x3002)),
+        (Convert-CodePoints @(0x8C03, 0x5BBF, 0x6210, 0x529F, 0x3002)),
+        ((Convert-CodePoints @(0x65B0, 0x589E, 0x6210, 0x529F)) + ': RegressionStudent'),
+        ((Convert-CodePoints @(0x65B0, 0x589E, 0x5931, 0x8D25)) + ': ' + (Convert-CodePoints @(0x5B66, 0x53F7, 0x5DF2, 0x5B58, 0x5728)) + ': 20249999'),
+        ((Convert-CodePoints @(0x65B0, 0x589E, 0x5931, 0x8D25)) + ': ' + (Convert-CodePoints @(0x8BE5, 0x5BBF, 0x820D, 0x697C, 0x5185, 0x623F, 0x95F4, 0x53F7, 0x5DF2, 0x5B58, 0x5728)) + ': 101'),
         $exitMessage
     ) | ForEach-Object { Assert-Contains -Text $consoleOutput -Expected $_ }
 
     $counts = Get-Scalar "SELECT (SELECT count(*) FROM buildings) || ',' || (SELECT count(*) FROM rooms) || ',' || (SELECT count(*) FROM students) || ',' || (SELECT count(*) FROM dorm_assignments)"
-    if ($counts -ne '3,4,6,4') { throw "Expected seed counts 3,4,6,4; got $counts" }
+    if ($counts -ne '3,4,7,5') { throw "Expected final counts 3,4,7,5; got $counts" }
+
+    $movedDorm = Get-Scalar "SELECT b.building_code || ',' || r.room_number || ',' || d.bed_number FROM dorm_assignments d JOIN buildings b ON b.building_id = d.building_id JOIN rooms r ON r.room_id = d.room_id WHERE d.student_id = '20240005'"
+    if ($movedDorm -ne 'M1,201,1') { throw "Expected 20240005 to move to M1,201,1; got $movedDorm" }
 
     Write-Output 'Console verification passed.'
 } finally {
