@@ -65,7 +65,7 @@ public final class DatabaseConnection implements AutoCloseable {
     private DatabaseConnection(Connection connection, DatabaseDialect dialect) {
         this.connection = connection;
         this.dialect = dialect;
-        // 将底层 JDBC Connection 注入各 Repository 实现，实现数据访问的封装
+        // 将底层 JDBC Connection 注入各 Repository ,让各个接口拿到connection
         this.buildingRepository = new JdbcBuildingRepository(connection);
         this.roomRepository = new JdbcRoomRepository(connection);
         this.studentRepository = new JdbcStudentRepository(connection);
@@ -106,10 +106,10 @@ public final class DatabaseConnection implements AutoCloseable {
     }
 
     /**
-     * 初始化数据库 schema：执行建表 SQL（带 IF NOT EXISTS，幂等安全）。
-     * <p>
-     * 建表顺序：buildings → rooms → students → dorm_assignments
-     * 保证外键依赖的表先被创建。
+      初始化数据库 schema：执行建表 SQL（带 IF NOT EXISTS，幂等安全）。
+      <p>
+      建表顺序：buildings → rooms → students → dorm_assignments
+      保证外键依赖的表先被创建。
      */
     public void initializeSchema() throws SQLException {
         for (String statement : dialect.schemaStatements()) {
