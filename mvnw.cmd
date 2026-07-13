@@ -25,7 +25,7 @@ SET "MAVEN_DIR=%WRAPPER_DIR%\%ARCHIVE_NAME:-bin=%"
 SET "MAVEN_CMD=%MAVEN_DIR%\bin\mvn.cmd"
 SET "ZIP_FILE=%WRAPPER_DIR%\%ARCHIVE_NAME%.zip"
 
-IF EXIST "%MAVEN_CMD%" GOTO run_maven
+IF EXIST "%MAVEN_CMD%" IF EXIST "%MAVEN_DIR%\boot\plexus-classworlds-*.jar" GOTO run_maven
 ECHO Downloading Maven wrapper distribution...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $url='%DISTRIBUTION_URL%'; $zip='%ZIP_FILE%'; $dir='%WRAPPER_DIR%'; Invoke-WebRequest -Uri $url -OutFile $zip; Expand-Archive -Path $zip -DestinationPath $dir -Force;"
 IF ERRORLEVEL 1 EXIT /B 1

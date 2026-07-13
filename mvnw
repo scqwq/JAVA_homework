@@ -21,7 +21,8 @@ MAVEN_DIR="$WRAPPER_DIR/${ARCHIVE_NAME%-bin}"
 MAVEN_CMD="$MAVEN_DIR/bin/mvn"
 ZIP_FILE="$WRAPPER_DIR/$ARCHIVE_NAME.zip"
 
-if [ ! -x "$MAVEN_CMD" ]; then
+MAVEN_BOOT_JAR=$(find "$MAVEN_DIR/boot" -maxdepth 1 -name 'plexus-classworlds-*.jar' -print -quit 2>/dev/null)
+if [ ! -x "$MAVEN_CMD" ] || [ -z "$MAVEN_BOOT_JAR" ]; then
   echo "Downloading Maven wrapper distribution..."
   if command -v curl >/dev/null 2>&1; then
     curl -fsSL "$DISTRIBUTION_URL" -o "$ZIP_FILE"
