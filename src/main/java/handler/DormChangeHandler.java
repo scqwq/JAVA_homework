@@ -35,10 +35,10 @@ public class DormChangeHandler extends BaseHandler {
     }
 
     private String buildRedirectUrl(String message, String error, Map<String, String> params) {
-        StringBuilder url = new StringBuilder("/?");
-        boolean needsAmpersand = false;
+        StringBuilder url = new StringBuilder("/?tab=dorms");
+        boolean needsAmpersand = true;
         if (message != null && !message.isBlank()) {
-            url.append("message=").append(encode(message));
+            url.append("&message=").append(encode(message));
             needsAmpersand = true;
         }
         if (error != null && !error.isBlank()) {

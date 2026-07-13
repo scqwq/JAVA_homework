@@ -4,6 +4,7 @@ import model.DormAssignment;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -41,5 +42,15 @@ public interface DormRepository {
      * 调宿时传入当前学生学号即可排除其原记录，避免把自己已有的床位误判为冲突。
      */
     boolean existsByRoomIdAndBedNumber(long roomId, int bedNumber, String excludeStudentId) throws SQLException;
+
+    /**
+     * 统计系统内所有已分配床位数。
+     */
+    long countAllAssignments() throws SQLException;
+
+    /**
+     * 按宿舍楼分组统计已分配床位数。
+     */
+    Map<Long, Long> countAssignmentsByBuilding() throws SQLException;
 }
 

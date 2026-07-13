@@ -1,14 +1,18 @@
 package service;
 
 import model.Building;
+import model.BuildingOccupancy;
 import model.DormAssignment;
+import model.OccupancyOverview;
 import model.Room;
 import model.Student;
 import model.StudentDormView;
 import database.DatabaseConnection;
 
+import java.util.ArrayList;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 宿舍分配服务类，负责处理学生入住、调宿及宿舍查询相关业务逻辑。
@@ -88,6 +92,43 @@ public class DormService {
     // 根据学生学号查询其宿舍信息。
     public StudentDormView findDormByStudent(String studentId) throws SQLException {
         return studentService.getDormByStudentId(studentId);
+    }
+
+    // 统计系统整体入住率及各楼栋入住率，供首页概览展示。
+    public OccupancyOverview getOccupancyOverview() throws SQLException {
+        List<Building> buildings = buildingService.listBuildings();
+        List<Room> rooms = roomService.listRooms();
+
+        long totalRooms = rooms.size();
+        long totalBeds = totalRooms * 4L;
+        long occupiedBeds = databaseConnection.dormRepository().countAllAssignments();
+        double occupancyRate = totalBeds == 0 ? 0.0 : Math.round(occupiedBeds * 1000.0 / totalBeds) / 10.0;
+
+        Map<Long, Long> roomsByBuilding = new java.util.HashMap<>();
+        for (Room room : rooms) {
+            roomsByBuilding.merge(room.buildingId(), 1L, Long::sum);
+        }
+
+        Map<Long, Long> occupiedByBuilding = databaseConnection.dormRepository().countAssignmentsByBuilding();
+        List<BuildingOccupancy> buildingStats = new ArrayList<>();
+        for (Building building : buildings) {
+            long buildingRooms = roomsByBuilding.getOrDefault(building.buildingId(), 0L);
+            long buildingBeds = buildingRooms * 4L;
+            long buildingOccupied = occupiedByBuilding.getOrDefault(building.buildingId(), 0L);
+            double buildingRate = buildingBeds == 0
+                    ? 0.0
+                    : Math.round(buildingOccupied * 1000.0 / buildingBeds) / 10.0;
+            buildingStats.add(new BuildingOccupancy(
+                    building.buildingId(),
+                    building.buildingName(),
+                    buildingRooms,
+                    buildingBeds,
+                    buildingOccupied,
+                    buildingRate
+            ));
+        }
+
+        return new OccupancyOverview(totalRooms, totalBeds, occupiedBeds, occupancyRate, buildingStats);
     }
 
     // 校验房间是否属于目标楼、床号是否在 1-4 范围、以及学生性别是否符合楼的性别策略。

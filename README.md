@@ -66,6 +66,57 @@ chmod +x mvnw
 
 程序启动时会自动建表。`mvnw` / `mvnw.cmd` 首次运行时会从 `.mvn/wrapper/maven-wrapper.properties` 指定的地址下载 Maven，因此第一次执行需要联网。
 
+## 部署到 ECS
+
+如果你已经把项目传到 Linux ECS、安装好了 Java 21，并且 PostgreSQL 已创建 `JAVA` 数据库，可以按下面运行：
+
+1. 复制配置文件：
+
+```bash
+cp .env.example .env
+```
+
+2. 编辑 `.env`，填写数据库连接，例如：
+
+```env
+APP_PORT=8080
+DATABASE_DSN=jdbc:postgresql://127.0.0.1:5432/JAVA?user=postgres&password=123456
+PGDSN=
+MYSQL_DSN=
+```
+
+3. 一键编译并启动网站：
+
+```bash
+bash scripts/run-ecs.sh
+```
+
+4. 启动成功后，在浏览器访问：
+
+```text
+http://服务器公网IP:8080
+```
+
+如果 ECS 开了防火墙或华为云安全组，记得放行 `8080` 端口。
+
+### ECS 上如何测试
+
+先在服务器本机测试：
+
+```bash
+curl http://127.0.0.1:8080
+```
+
+如果返回 HTML，说明程序已经正常启动。
+
+再从你自己的电脑浏览器访问：
+
+```text
+http://ECS公网IP:8080
+```
+
+如果本机能通、外网不能通，通常是华为云安全组或服务器防火墙没有放行 `8080`。
+
 ## 演示数据
 
 程序首次启动会自动建表，但不会自动导入演示数据。建表后可手动执行

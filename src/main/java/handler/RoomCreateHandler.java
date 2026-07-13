@@ -22,14 +22,14 @@ public class RoomCreateHandler extends BaseHandler {
             Map<String, String> params = formParams(exchange);
             Room room = roomService.createRoom(
                     requireText(params, "roomNumber", "房间号"),
-                    requireLong(params, "buildingId", "宿舍楼 ID"),
+                    requireLong(params, "buildingId", "请选择宿舍楼"),
                     requireInt(params, "floorNumber", "楼层")
             );
-            redirect(exchange, "/?message=" + encode("房间创建成功: " + room.roomNumber()));
+            redirect(exchange, "/?tab=rooms&message=" + encode("房间创建成功: " + room.roomNumber()));
         } catch (IllegalArgumentException exception) {
-            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+            redirect(exchange, "/?tab=rooms&error=" + encode(exception.getMessage()));
         } catch (SQLException exception) {
-            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+            redirect(exchange, "/?tab=rooms&error=" + encode("数据库操作失败: " + exception.getMessage()));
         }
     }
 }

@@ -2,6 +2,8 @@ package handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import model.Building;
+import model.BuildingOccupancy;
+import model.OccupancyOverview;
 import model.Room;
 import model.Student;
 import model.StudentDormView;
@@ -16,8 +18,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DashboardHandler extends BaseHandler {
+    private static final Set<String> VALID_TABS = Set.of(
+            "dashboard", "students", "buildings", "rooms", "dorms", "queries"
+    );
+
     private final BuildingService buildingService;
     private final RoomService roomService;
     private final StudentService studentService;
@@ -41,22 +48,29 @@ public class DashboardHandler extends BaseHandler {
         List<Building> buildings = List.of();
         List<Room> rooms = List.of();
         List<Student> students = List.of();
+        OccupancyOverview occupancy = new OccupancyOverview(0, 0, 0, 0.0, List.of());
         StudentDormView dormByStudent = null;
         List<StudentDormView> studentsByRoom = List.of();
         Room roomByLocation = null;
+        String activeTab = normalizeTab(query.getOrDefault("tab", "dashboard"));
+
         try {
             ensureMethod(exchange, "GET");
             buildings = buildingService.listBuildings();
             rooms = roomService.listRooms();
             students = studentService.listStudents();
+            occupancy = dormService.getOccupancyOverview();
 
-            if (!query.getOrDefault("lookupStudentId", "").isBlank()) {
-                dormByStudent = dormService.findDormByStudent(query.get("lookupStudentId").trim());
+            String lookupStudentId = query.getOrDefault("lookupStudentId", "").trim();
+            if (!lookupStudentId.isBlank()) {
+                dormByStudent = dormService.findDormByStudent(lookupStudentId);
+                activeTab = "queries";
             }
 
             String lookupRoomId = query.getOrDefault("lookupRoomId", "").trim();
             if (!lookupRoomId.isBlank()) {
                 studentsByRoom = dormService.findStudentsByRoom(Long.parseLong(lookupRoomId));
+                activeTab = "queries";
             }
 
             String lookupBuildingId = query.getOrDefault("lookupBuildingId", "").trim();
@@ -69,22 +83,25 @@ public class DashboardHandler extends BaseHandler {
                         lookupRoomNumber
                 );
                 studentsByRoom = dormService.findStudentsByRoom(roomByLocation.roomId());
+                activeTab = "queries";
             }
 
             sendHtml(exchange, 200, renderPage(
+                    activeTab,
                     query.getOrDefault("message", ""),
                     query.getOrDefault("error", ""),
                     buildings,
                     rooms,
                     students,
+                    occupancy,
                     dormByStudent,
                     studentsByRoom,
                     query.getOrDefault("lookupStudentId", ""),
-                    lookupRoomId,
+                    query.getOrDefault("lookupRoomId", ""),
                     roomByLocation,
-                    lookupBuildingId,
-                    lookupFloorNumber,
-                    lookupRoomNumber,
+                    query.getOrDefault("lookupBuildingId", ""),
+                    query.getOrDefault("lookupFloorNumber", ""),
+                    query.getOrDefault("lookupRoomNumber", ""),
                     query.getOrDefault("changeStudentId", ""),
                     query.getOrDefault("changeBuildingId", ""),
                     query.getOrDefault("changeRoomId", ""),
@@ -96,17 +113,20 @@ public class DashboardHandler extends BaseHandler {
                     buildings = buildingService.listBuildings();
                     rooms = roomService.listRooms();
                     students = studentService.listStudents();
+                    occupancy = dormService.getOccupancyOverview();
                 } catch (SQLException sqlException) {
                     sendHtml(exchange, 500, renderErrorPage("数据库操作失败: " + sqlException.getMessage()));
                     return;
                 }
             }
             sendHtml(exchange, 400, renderPage(
+                    activeTab,
                     query.getOrDefault("message", ""),
                     exception.getMessage(),
                     buildings,
                     rooms,
                     students,
+                    occupancy,
                     dormByStudent,
                     studentsByRoom,
                     query.getOrDefault("lookupStudentId", ""),
@@ -122,11 +142,13 @@ public class DashboardHandler extends BaseHandler {
             ));
         } catch (SQLException exception) {
             sendHtml(exchange, 500, renderPage(
+                    activeTab,
                     query.getOrDefault("message", ""),
                     "数据库操作失败: " + exception.getMessage(),
                     buildings,
                     rooms,
                     students,
+                    occupancy,
                     dormByStudent,
                     studentsByRoom,
                     query.getOrDefault("lookupStudentId", ""),
@@ -144,11 +166,13 @@ public class DashboardHandler extends BaseHandler {
     }
 
     private String renderPage(
+            String activeTab,
             String message,
             String error,
             List<Building> buildings,
             List<Room> rooms,
             List<Student> students,
+            OccupancyOverview occupancy,
             StudentDormView dormByStudent,
             List<StudentDormView> studentsByRoom,
             String lookupStudentId,
@@ -171,160 +195,370 @@ public class DashboardHandler extends BaseHandler {
                     <title>学生宿舍管理系统</title>
                     <style>
                         :root {
-                            --bg: #f4efe6;
-                            --card: #fffaf2;
+                            --bg: #f4f6f8;
+                            --surface: #ffffff;
                             --ink: #1f2937;
                             --subtle: #6b7280;
-                            --line: #d6c7b2;
-                            --accent: #b45309;
-                            --accent-soft: #fde7c2;
-                            --danger: #b91c1c;
-                            --ok: #166534;
+                            --line: #e5e7eb;
+                            --primary: #2563eb;
+                            --primary-soft: #dbeafe;
+                            --accent: #7c3aed;
+                            --accent-soft: #ede9fe;
+                            --success: #059669;
+                            --success-soft: #d1fae5;
+                            --danger: #dc2626;
+                            --danger-soft: #fee2e2;
+                            --radius: 16px;
+                            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
                         }
                         * { box-sizing: border-box; }
                         body {
                             margin: 0;
-                            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+                            font-family: "Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
                             color: var(--ink);
-                            background:
-                                radial-gradient(circle at top left, #fff3d6 0, transparent 28%),
-                                linear-gradient(180deg, #f7f1e8 0%, var(--bg) 100%);
+                            background: var(--bg);
+                            line-height: 1.5;
                         }
-                        .page {
+                        header {
+                            position: sticky;
+                            top: 0;
+                            z-index: 100;
+                            background: rgba(255, 255, 255, 0.92);
+                            backdrop-filter: blur(10px);
+                            border-bottom: 1px solid var(--line);
+                            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+                        }
+                        .header-inner {
                             max-width: 1400px;
                             margin: 0 auto;
-                            padding: 32px 20px 48px;
+                            padding: 18px 24px;
+                            display: flex;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 16px;
                         }
                         h1 {
-                            margin: 0 0 8px;
-                            font-size: 38px;
-                        }
-                        .subtitle {
-                            color: var(--subtle);
-                            margin-bottom: 24px;
-                        }
-                        .notice, .error {
-                            padding: 14px 16px;
-                            border-radius: 14px;
-                            margin-bottom: 18px;
-                        }
-                        .notice {
-                            background: #dcfce7;
-                            color: var(--ok);
-                        }
-                        .error {
-                            background: #fee2e2;
-                            color: var(--danger);
-                        }
-                        .grid {
-                            display: grid;
-                            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-                            gap: 18px;
-                        }
-                        .card {
-                            background: var(--card);
-                            border: 1px solid rgba(214, 199, 178, 0.9);
-                            border-radius: 22px;
-                            padding: 20px;
-                            box-shadow: 0 10px 30px rgba(120, 92, 42, 0.08);
-                        }
-                        h2 {
-                            margin-top: 0;
+                            margin: 0;
                             font-size: 22px;
-                        }
-                        form {
-                            display: grid;
+                            display: flex;
+                            align-items: center;
                             gap: 10px;
                         }
-                        label {
-                            font-size: 14px;
+                        .subtitle {
+                            margin: 4px 0 0;
+                            font-size: 13px;
                             color: var(--subtle);
                         }
-                        input, select, button {
-                            width: 100%;
-                            padding: 10px 12px;
-                            border-radius: 12px;
+                        nav {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 8px;
+                        }
+                        nav a {
+                            padding: 8px 16px;
+                            border-radius: 999px;
+                            text-decoration: none;
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: var(--subtle);
+                            transition: all 0.15s ease;
+                        }
+                        nav a:hover {
+                            background: var(--primary-soft);
+                            color: var(--primary);
+                        }
+                        nav a.active {
+                            background: var(--primary);
+                            color: #fff;
+                            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+                        }
+                        main {
+                            max-width: 1400px;
+                            margin: 0 auto;
+                            padding: 24px;
+                        }
+                        .notice, .error {
+                            padding: 14px 18px;
+                            border-radius: var(--radius);
+                            margin-bottom: 20px;
+                            font-size: 14px;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+                        .notice {
+                            background: var(--success-soft);
+                            color: var(--success);
+                            border: 1px solid #a7f3d0;
+                        }
+                        .error {
+                            background: var(--danger-soft);
+                            color: var(--danger);
+                            border: 1px solid #fecaca;
+                        }
+                        .tab-content { display: none; animation: fadeIn 0.25s ease; }
+                        .tab-content.active { display: block; }
+                        @keyframes fadeIn {
+                            from { opacity: 0; transform: translateY(6px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        .stats {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                            gap: 16px;
+                            margin-bottom: 24px;
+                        }
+                        .stat-card, .card {
+                            background: var(--surface);
+                            border-radius: var(--radius);
+                            box-shadow: var(--shadow);
                             border: 1px solid var(--line);
-                            font-size: 15px;
-                            background: white;
+                        }
+                        .stat-card { padding: 20px; }
+                        .stat-card h3 {
+                            margin: 0 0 6px;
+                            font-size: 13px;
+                            color: var(--subtle);
+                            font-weight: 500;
+                        }
+                        .stat-card .number {
+                            font-size: 32px;
+                            font-weight: 700;
+                            color: var(--primary);
+                        }
+                        .card {
+                            padding: 24px;
+                            margin-bottom: 20px;
+                        }
+                        .card h2 {
+                            margin: 0 0 18px;
+                            font-size: 18px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .two-col {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                            gap: 20px;
+                        }
+                        .form-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                            gap: 16px;
+                        }
+                        .form-group {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 6px;
+                        }
+                        label {
+                            font-size: 13px;
+                            color: var(--subtle);
+                            font-weight: 500;
+                        }
+                        input, select {
+                            padding: 10px 12px;
+                            border-radius: 10px;
+                            border: 1px solid var(--line);
+                            font-size: 14px;
+                            background: #fff;
+                            outline: none;
+                            transition: border 0.15s;
+                            width: 100%;
+                        }
+                        input:focus, select:focus {
+                            border-color: var(--primary);
+                            box-shadow: 0 0 0 3px var(--primary-soft);
                         }
                         button {
+                            padding: 10px 18px;
                             border: none;
-                            background: linear-gradient(135deg, #c2410c, var(--accent));
-                            color: white;
-                            font-weight: 700;
+                            border-radius: 10px;
+                            background: var(--primary);
+                            color: #fff;
+                            font-size: 14px;
+                            font-weight: 600;
                             cursor: pointer;
+                            transition: all 0.15s;
                         }
                         button:hover {
                             filter: brightness(1.05);
+                            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
                         }
+                        button.secondary {
+                            background: var(--accent);
+                        }
+                        button.secondary:hover {
+                            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+                        }
+                        .actions {
+                            display: flex;
+                            justify-content: flex-end;
+                            margin-top: 8px;
+                        }
+                        .occupancy-summary {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                            gap: 16px;
+                            margin-bottom: 20px;
+                        }
+                        .summary-item { display: flex; flex-direction: column; gap: 4px; }
+                        .summary-label { font-size: 13px; color: var(--subtle); }
+                        .summary-value { font-size: 24px; font-weight: 700; color: var(--ink); }
+                        .summary-value.primary { color: var(--primary); }
+                        .summary-value.accent { color: var(--accent); }
+                        .progress-bar {
+                            height: 14px;
+                            background: #e5e7eb;
+                            border-radius: 999px;
+                            overflow: hidden;
+                        }
+                        .progress-bar.slim {
+                            height: 8px;
+                            margin-top: 8px;
+                        }
+                        .progress-fill {
+                            height: 100%;
+                            background: linear-gradient(90deg, var(--primary), #60a5fa);
+                            border-radius: 999px;
+                        }
+                        .occupancy-row {
+                            padding: 14px 0;
+                            border-bottom: 1px solid var(--line);
+                        }
+                        .occupancy-row:last-child {
+                            border-bottom: none;
+                            padding-bottom: 0;
+                        }
+                        .occupancy-info {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            gap: 12px;
+                        }
+                        .occupancy-name { font-weight: 600; }
+                        .occupancy-detail { font-size: 13px; color: var(--subtle); }
+                        .occupancy-rate {
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: var(--primary);
+                            text-align: right;
+                            margin-bottom: 4px;
+                        }
+                        .quick-links {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                            gap: 12px;
+                        }
+                        .quick-links a {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            padding: 14px;
+                            border-radius: 12px;
+                            background: var(--surface);
+                            border: 1px solid var(--line);
+                            text-decoration: none;
+                            color: var(--ink);
+                            font-weight: 500;
+                            transition: all 0.15s;
+                        }
+                        .quick-links a:hover {
+                            border-color: var(--primary);
+                            background: var(--primary-soft);
+                            color: var(--primary);
+                        }
+                        .scroll-x { overflow-x: auto; }
                         table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-top: 12px;
                             font-size: 14px;
                         }
                         th, td {
+                            padding: 12px;
                             text-align: left;
-                            padding: 10px 8px;
-                            border-bottom: 1px solid #eadfce;
-                            vertical-align: top;
+                            border-bottom: 1px solid var(--line);
                         }
                         th {
+                            background: #f9fafb;
                             color: var(--subtle);
+                            font-weight: 600;
+                            font-size: 13px;
                         }
+                        tr:hover td { background: #f9fafb; }
                         .pill {
                             display: inline-block;
-                            padding: 4px 10px;
+                            padding: 3px 10px;
                             border-radius: 999px;
+                            background: var(--primary-soft);
+                            color: var(--primary);
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+                        .pill.accent {
                             background: var(--accent-soft);
                             color: var(--accent);
-                            font-size: 12px;
-                            font-weight: 700;
-                        }
-                        .wide {
-                            grid-column: 1 / -1;
                         }
                         .result {
-                            margin-top: 14px;
-                            padding: 14px;
-                            border-radius: 14px;
-                            background: #fff;
+                            margin-top: 16px;
+                            padding: 16px;
+                            border-radius: var(--radius);
+                            background: #f9fafb;
                             border: 1px dashed var(--line);
+                            font-size: 14px;
+                        }
+                        .empty {
+                            color: var(--subtle);
+                            font-size: 14px;
+                            padding: 16px;
+                            text-align: center;
                         }
                     </style>
                 </head>
                 <body>
-                <div class="page">
-                    <h1>学生宿舍管理系统</h1>
-                    <div class="subtitle">当前已切换为浏览器访问方式，所有操作都可以在这个管理页面完成。</div>
+                <header>
+                    <div class="header-inner">
+                        <div>
+                            <h1>🏫 学生宿舍管理系统</h1>
+                            <div class="subtitle">沿用当前项目稳定逻辑，前端布局切换为 javahw 风格后台。</div>
+                        </div>
+                        <nav>
+                """);
+
+        html.append(renderNavLink("dashboard", "概览", activeTab));
+        html.append(renderNavLink("students", "学生管理", activeTab));
+        html.append(renderNavLink("buildings", "楼栋管理", activeTab));
+        html.append(renderNavLink("rooms", "房间管理", activeTab));
+        html.append(renderNavLink("dorms", "宿舍分配", activeTab));
+        html.append(renderNavLink("queries", "查询中心", activeTab));
+
+        html.append("""
+                        </nav>
+                    </div>
+                </header>
+                <main>
                 """);
 
         if (!message.isBlank()) {
-            html.append("<div class=\"notice\">").append(escapeHtml(message)).append("</div>");
+            html.append("<div class=\"notice\">✔ ").append(escapeHtml(message)).append("</div>");
         }
         if (!error.isBlank()) {
-            html.append("<div class=\"error\">").append(escapeHtml(error)).append("</div>");
+            html.append("<div class=\"error\">✖ ").append(escapeHtml(error)).append("</div>");
         }
 
-        html.append("""
-                    <div class="grid">
-                """);
-        html.append(renderStudentForm());
-        html.append(renderBuildingForm(buildings));
-        html.append(renderRoomForm(buildings));
-        html.append(renderAssignForm(buildings, rooms));
-        html.append(renderChangeForm(
+        html.append(renderDashboardSection(activeTab, occupancy));
+        html.append(renderStudentSection(activeTab, students));
+        html.append(renderBuildingSection(activeTab, buildings));
+        html.append(renderRoomSection(activeTab, buildings, rooms));
+        html.append(renderDormSection(activeTab, buildings, changeStudentId, changeBuildingId, changeRoomId, changeBedNumber));
+        html.append(renderQuerySection(
+                activeTab,
                 buildings,
-                rooms,
-                changeStudentId,
-                changeBuildingId,
-                changeRoomId,
-                changeBedNumber
-        ));
-        html.append(renderStudentLookupForm(lookupStudentId, dormByStudent));
-        html.append(renderRoomLookupForm(
-                buildings,
+                lookupStudentId,
+                dormByStudent,
                 lookupRoomId,
                 studentsByRoom,
                 roomByLocation,
@@ -332,161 +566,201 @@ public class DashboardHandler extends BaseHandler {
                 lookupFloorNumber,
                 lookupRoomNumber
         ));
-        html.append(renderStudentTable(students));
-        html.append(renderBuildingTable(buildings));
-        html.append(renderRoomTable(rooms, buildings));
-        html.append(renderFormScript());
-        html.append("""
-                    </div>
-                </div>
+        html.append(renderFormScript()).append("""
+                </main>
                 </body>
                 </html>
                 """);
         return html.toString();
     }
 
-    private String renderStudentForm() {
+    private String renderNavLink(String tab, String label, String activeTab) {
+        return "<a href=\"/?tab=" + tab + "\" class=\"" + (tab.equals(activeTab) ? "active" : "") + "\">"
+                + escapeHtml(label) + "</a>";
+    }
+
+    private String renderDashboardSection(String activeTab, OccupancyOverview occupancy) {
+        StringBuilder buildingRows = new StringBuilder();
+        if (occupancy.buildingStats().isEmpty()) {
+            buildingRows.append("<div class=\"empty\">暂无楼栋入住统计</div>");
+        } else {
+            for (BuildingOccupancy item : occupancy.buildingStats()) {
+                buildingRows.append("<div class=\"occupancy-row\">")
+                        .append("<div class=\"occupancy-info\"><div>")
+                        .append("<div class=\"occupancy-name\">").append(escapeHtml(item.buildingName())).append("</div>")
+                        .append("<div class=\"occupancy-detail\">房间 ").append(item.totalRooms())
+                        .append(" 间 / 床位 ").append(item.totalBeds())
+                        .append(" / 已住 ").append(item.occupiedBeds()).append("</div>")
+                        .append("</div><div style=\"min-width:120px;\">")
+                        .append("<div class=\"occupancy-rate\">").append(item.occupancyRate()).append("%</div>")
+                        .append("<div class=\"progress-bar slim\"><div class=\"progress-fill\" style=\"width:")
+                        .append(Math.min(item.occupancyRate(), 100.0)).append("%\"></div></div>")
+                        .append("</div></div></div>");
+            }
+        }
+
         return """
-                <section class="card">
-                    <h2>新增学生</h2>
-                    <form method="post" action="/students/create">
-                        <label>学号<input name="studentId" placeholder="例如 20240001" required></label>
-                        <label>姓名<input name="name" placeholder="例如 张三" required></label>
-                        <label>班级<input name="className" placeholder="例如 计科 1 班" required></label>
-                        <label>年级<input name="grade" placeholder="例如 2024" required></label>
-                        <label>性别
-                            <select name="gender">
-                                <option value="男">男</option>
-                                <option value="女">女</option>
-                            </select>
-                        </label>
-                        <button type="submit">创建学生</button>
-                    </form>
+                <section class="tab-content """ + activeClass(activeTab, "dashboard") + """
+                ">
+                    <div class="stats">
+                        <div class="stat-card"><h3>宿舍楼数量</h3><div class="number">""" + occupancy.buildingStats().size() + "</div></div>\n" +
+                "        <div class=\"stat-card\"><h3>房间总数</h3><div class=\"number\">" + occupancy.totalRooms() + "</div></div>\n" +
+                "        <div class=\"stat-card\"><h3>床位总数</h3><div class=\"number\">" + occupancy.totalBeds() + "</div></div>\n" +
+                "        <div class=\"stat-card\"><h3>已入住床位</h3><div class=\"number\">" + occupancy.occupiedBeds() + "</div></div>\n" +
+                "    </div>\n" +
+                "    <div class=\"two-col\">\n" +
+                "        <div class=\"card\">\n" +
+                "            <h2>📊 入住率概览</h2>\n" +
+                "            <div class=\"occupancy-summary\">\n" +
+                "                <div class=\"summary-item\"><span class=\"summary-label\">整体入住率</span><span class=\"summary-value primary\">" + occupancy.occupancyRate() + "%</span></div>\n" +
+                "                <div class=\"summary-item\"><span class=\"summary-label\">空闲床位</span><span class=\"summary-value accent\">" + (occupancy.totalBeds() - occupancy.occupiedBeds()) + "</span></div>\n" +
+                "            </div>\n" +
+                "            <div class=\"progress-bar\"><div class=\"progress-fill\" style=\"width:" + Math.min(occupancy.occupancyRate(), 100.0) + "%\"></div></div>\n" +
+                "        </div>\n" +
+                "        <div class=\"card\">\n" +
+                "            <h2>🚀 快捷入口</h2>\n" +
+                "            <div class=\"quick-links\">\n" +
+                "                <a href='/?tab=students'>学生管理</a>\n" +
+                "                <a href='/?tab=buildings'>楼栋管理</a>\n" +
+                "                <a href='/?tab=rooms'>房间管理</a>\n" +
+                "                <a href='/?tab=dorms'>宿舍分配</a>\n" +
+                "                <a href='/?tab=queries'>查询中心</a>\n" +
+                "            </div>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "    <div class=\"card\">\n" +
+                "        <h2>🏢 各楼栋入住情况</h2>\n" +
+                buildingRows +
+                "    </div>\n" +
+                "</section>";
+    }
+
+    private String renderStudentSection(String activeTab, List<Student> students) {
+        return """
+                <section class="tab-content """ + activeClass(activeTab, "students") + """
+                ">
+                    <div class="two-col">
+                        <div class="card">
+                            <h2>👤 新增学生</h2>
+                            <form method="post" action="/students/create">
+                                <input type="hidden" name="tab" value="students">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>学号</label><input name="studentId" placeholder="例如 20240001" required></div>
+                                    <div class="form-group"><label>姓名</label><input name="name" placeholder="例如 张三" required></div>
+                                    <div class="form-group"><label>班级</label><input name="className" placeholder="例如 计科 1 班" required></div>
+                                    <div class="form-group"><label>年级</label><input name="grade" placeholder="例如 2024" required></div>
+                                    <div class="form-group"><label>性别</label><select name="gender"><option value="男">男</option><option value="女">女</option></select></div>
+                                </div>
+                                <div class="actions"><button type="submit">创建学生</button></div>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <h2>📋 学生列表</h2>
+                            """ + renderStudentTable(students) + """
+                        </div>
+                    </div>
                 </section>
                 """;
     }
 
-    private String renderBuildingForm(List<Building> buildings) {
+    private String renderBuildingSection(String activeTab, List<Building> buildings) {
         return """
-                <section class="card">
-                    <h2>新增宿舍楼</h2>
-                    <form method="post" action="/buildings/create">
-                        <label>楼栋编号<input name="code" placeholder="例如 A1" required></label>
-                        <label>楼栋名称<input name="name" placeholder="例如 一舍" required></label>
-                        <label>入住策略
-                            <select name="genderPolicy">
-                                <option value="男">男生楼</option>
-                                <option value="女">女生楼</option>
-                                <option value="男女分层">男女分层</option>
-                            </select>
-                        </label>
-                        <button type="submit">创建宿舍楼</button>
-                    </form>
-                    <div class="result">当前楼栋数量：<span class="pill">""" + buildings.size() + "</span></div>\n" +
-                "                </section>\n";
-    }
-
-    private String renderRoomForm(List<Building> buildings) {
-        if (buildings.isEmpty()) {
-            return """
-                    <section class="card">
-                        <h2>新增房间</h2>
-                        <div class="result">请先创建宿舍楼，再为楼栋添加房间。</div>
-                    </section>
-                    """;
-        }
-
-        StringBuilder html = new StringBuilder();
-        html.append("""
-                <section class="card">
-                    <h2>新增房间</h2>
-                    <form method="post" action="/rooms/create">
-                        <label>房间号<input name="roomNumber" placeholder="例如 101" required></label>
-                        <label>所属宿舍楼
-                            <select name="buildingId" required>
-                """);
-        appendBuildingOptions(html, buildings, "请选择宿舍楼");
-        html.append("""
-                            </select>
-                        </label>
-                        <label>楼层<input type="number" name="floorNumber" min="1" placeholder="例如 1" required></label>
-                        <button type="submit">创建房间</button>
-                    </form>
+                <section class="tab-content """ + activeClass(activeTab, "buildings") + """
+                ">
+                    <div class="two-col">
+                        <div class="card">
+                            <h2>🏢 新增宿舍楼</h2>
+                            <form method="post" action="/buildings/create">
+                                <input type="hidden" name="tab" value="buildings">
+                                <div class="form-grid">
+                                    <div class="form-group"><label>楼栋编号</label><input name="code" placeholder="例如 A1" required></div>
+                                    <div class="form-group"><label>楼栋名称</label><input name="name" placeholder="例如 一舍" required></div>
+                                    <div class="form-group"><label>入住策略</label><select name="genderPolicy"><option value="男">男生楼</option><option value="女">女生楼</option><option value="男女分层">男女分层</option></select></div>
+                                </div>
+                                <div class="actions"><button type="submit">创建宿舍楼</button></div>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <h2>📋 宿舍楼列表</h2>
+                            """ + renderBuildingTable(buildings) + """
+                        </div>
+                    </div>
                 </section>
-                """);
-        return html.toString();
+                """;
     }
 
-    private String renderAssignForm(List<Building> buildings, List<Room> rooms) {
-        return renderDormForm(
-                "分配宿舍",
+    private String renderRoomSection(String activeTab, List<Building> buildings, List<Room> rooms) {
+        return """
+                <section class="tab-content """ + activeClass(activeTab, "rooms") + """
+                ">
+                    <div class="two-col">
+                        <div class="card">
+                            <h2>🚪 新增房间</h2>
+                            """ + renderRoomFormCard(buildings) + """
+                        </div>
+                        <div class="card">
+                            <h2>📋 房间列表</h2>
+                            """ + renderRoomTable(rooms, buildings) + """
+                        </div>
+                    </div>
+                </section>
+                """;
+    }
+
+    private String renderDormSection(
+            String activeTab,
+            List<Building> buildings,
+            String changeStudentId,
+            String changeBuildingId,
+            String changeRoomId,
+            String changeBedNumber
+    ) {
+        return """
+                <section class="tab-content """ + activeClass(activeTab, "dorms") + """
+                ">
+                    <div class="two-col">
+                        <div class="card">
+                            <h2>🛏️ 分配宿舍</h2>
+                            """ + renderDormForm(
                 "/dorms/assign",
                 "assign-form",
+                "assign-dorm",
                 "输入已存在的学号",
                 "分配床位",
-                "当前没有宿舍楼，请先创建宿舍楼和房间，再进行分配。",
+                false,
                 buildings,
-                rooms,
-                "assign-dorm",
                 "",
                 "",
                 "",
                 ""
-        );
-    }
-
-    private String renderChangeForm(
-            List<Building> buildings,
-            List<Room> rooms,
-            String studentId,
-            String buildingId,
-            String roomId,
-            String bedNumber
-    ) {
-        return renderDormForm(
-                "调换宿舍",
+        ) + """
+                        </div>
+                        <div class="card">
+                            <h2>🔄 调换宿舍</h2>
+                            """ + renderDormForm(
                 "/dorms/change",
                 "change-form",
+                "change-dorm",
                 "输入已入住的学号",
                 "提交调宿",
-                "当前没有可调换的宿舍资源，请先创建宿舍楼和房间。",
+                true,
                 buildings,
-                rooms,
-                "change-dorm",
-                studentId,
-                buildingId,
-                roomId,
-                bedNumber
-        );
-    }
-
-    private String renderStudentLookupForm(String lookupStudentId, StudentDormView dormByStudent) {
-        StringBuilder result = new StringBuilder();
-        if (!lookupStudentId.isBlank() && dormByStudent != null) {
-            result.append("<div class=\"result\">")
-                    .append("学号：").append(escapeHtml(dormByStudent.studentId())).append("<br>")
-                    .append("姓名：").append(escapeHtml(dormByStudent.studentName())).append("<br>")
-                    .append("宿舍楼：").append(escapeHtml(nullToDash(dormByStudent.buildingName()))).append("<br>")
-                    .append("房间号：").append(escapeHtml(nullToDash(dormByStudent.roomNumber()))).append("<br>")
-                    .append("床号：").append(dormByStudent.bedNumber() == null ? "-" : dormByStudent.bedNumber())
-                    .append("</div>");
-        }
-        return """
-                <section class="card" id="student-lookup">
-                    <h2>按学号查宿舍</h2>
-                    <form method="get" action="/#student-lookup">
-                        <label>学号<input name="lookupStudentId" value="
-                """ + escapeHtml(lookupStudentId) + """
-                " placeholder="例如 20240001" required></label>
-                        <button type="submit">查询住宿信息</button>
-                    </form>
-                """ + result + """
+                changeStudentId,
+                changeBuildingId,
+                changeRoomId,
+                changeBedNumber
+        ) + """
+                        </div>
+                    </div>
                 </section>
                 """;
     }
 
-    private String renderRoomLookupForm(
+    private String renderQuerySection(
+            String activeTab,
             List<Building> buildings,
+            String lookupStudentId,
+            StudentDormView dormByStudent,
             String lookupRoomId,
             List<StudentDormView> studentsByRoom,
             Room roomByLocation,
@@ -494,68 +768,199 @@ public class DashboardHandler extends BaseHandler {
             String lookupFloorNumber,
             String lookupRoomNumber
     ) {
-        StringBuilder result = new StringBuilder();
-        if (!lookupRoomId.isBlank() || roomByLocation != null) {
-            result.append("<div class=\"result\">");
-            if (roomByLocation != null) {
-                result.append("当前查询房间：房间 ID ").append(roomByLocation.roomId())
-                        .append(" / 楼层 ").append(roomByLocation.floorNumber())
-                        .append(" / 房间号 ").append(escapeHtml(roomByLocation.roomNumber()))
-                        .append("<br>");
-            }
-            if (studentsByRoom.isEmpty()) {
-                result.append("当前房间暂无学生入住。");
-            } else {
-                for (StudentDormView view : studentsByRoom) {
-                    result.append(escapeHtml(view.studentName()))
-                            .append("（")
-                            .append(escapeHtml(view.studentId()))
-                            .append("）- 床号 ")
-                            .append(view.bedNumber())
-                            .append("<br>");
-                }
-            }
-            result.append("</div>");
+        return """
+                <section class="tab-content """ + activeClass(activeTab, "queries") + """
+                ">
+                    <div class="two-col">
+                        <div class="card">
+                            <h2>🔍 按学号查宿舍</h2>
+                            <form method="get" action="/">
+                                <input type="hidden" name="tab" value="queries">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>学号</label>
+                                        <input name="lookupStudentId" value="
+                """ + escapeHtml(lookupStudentId) + """
+                " placeholder="例如 20240001" required>
+                                    </div>
+                                </div>
+                                <div class="actions"><button type="submit">查询住宿信息</button></div>
+                            </form>
+                            """ + renderStudentDormResult(dormByStudent) + """
+                        </div>
+                        <div class="card">
+                            <h2>🔍 按房间查学生</h2>
+                            <form method="get" action="/">
+                                <input type="hidden" name="tab" value="queries">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>房间 ID</label>
+                                        <input name="lookupRoomId" value="
+                """ + escapeHtml(lookupRoomId) + """
+                " placeholder="例如 1">
+                                    </div>
+                                </div>
+                                <div class="actions"><button type="submit">按房间 ID 查询</button></div>
+                            </form>
+                            <form method="get" action="/" style="margin-top:16px;">
+                                <input type="hidden" name="tab" value="queries">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>所属宿舍楼</label>
+                                        <select name="lookupBuildingId" required>
+                                            """ + renderBuildingOptionsWithSelected(buildings, lookupBuildingId) + """
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>楼层</label>
+                                        <input type="number" name="lookupFloorNumber" min="1" value="
+                """ + escapeHtml(lookupFloorNumber) + """
+                " placeholder="例如 3" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>房间号</label>
+                                        <input name="lookupRoomNumber" value="
+                """ + escapeHtml(lookupRoomNumber) + """
+                " placeholder="例如 301" required>
+                                    </div>
+                                </div>
+                                <div class="actions"><button type="submit">按楼层和房间号查询</button></div>
+                            </form>
+                            """ + renderRoomStudentsResult(roomByLocation, studentsByRoom) + """
+                        </div>
+                    </div>
+                </section>
+                """;
+    }
+
+    private String renderRoomFormCard(List<Building> buildings) {
+        if (buildings.isEmpty()) {
+            return "<div class=\"empty\">请先创建宿舍楼，再为楼栋添加房间。</div>";
+        }
+        return """
+                <form method="post" action="/rooms/create">
+                    <input type="hidden" name="tab" value="rooms">
+                    <div class="form-grid">
+                        <div class="form-group"><label>房间号</label><input name="roomNumber" placeholder="例如 101" required></div>
+                        <div class="form-group"><label>所属宿舍楼</label><select name="buildingId" required>
+                            """ + renderBuildingOptions(buildings) + """
+                        </select></div>
+                        <div class="form-group"><label>楼层</label><input type="number" name="floorNumber" min="1" placeholder="例如 1" required></div>
+                    </div>
+                    <div class="actions"><button type="submit">创建房间</button></div>
+                </form>
+                """;
+    }
+
+    private String renderDormForm(
+            String action,
+            String formClass,
+            String sectionId,
+            String studentPlaceholder,
+            String buttonLabel,
+            boolean secondary,
+            List<Building> buildings,
+            String selectedStudentId,
+            String selectedBuildingId,
+            String selectedRoomId,
+            String selectedBedNumber
+    ) {
+        if (buildings.isEmpty()) {
+            return "<div class=\"empty\">当前没有宿舍楼，请先创建宿舍楼和房间。</div>";
         }
 
-        StringBuilder html = new StringBuilder();
-        html.append("""
-                <section class="card" id="room-lookup">
-                    <h2>按房间查学生</h2>
-                    <form method="get" action="/#room-lookup">
-                        <label>房间 ID<input name="lookupRoomId" value="
-                """).append(escapeHtml(lookupRoomId)).append("""
-                " placeholder="例如 1"></label>
-                        <button type="submit">按房间 ID 查询</button>
-                    </form>
-                """);
-
-        html.append("""
-                    <form method="get" action="/#room-lookup">
-                        <label>所属宿舍楼
-                            <select name="lookupBuildingId" required>
-                """);
-        appendBuildingOptionsWithSelected(html, buildings, "请选择宿舍楼", lookupBuildingId);
-        html.append("""
+        String buttonClass = secondary ? " class=\"secondary\"" : "";
+        return """
+                <form method="post" action="
+                """ + action + """
+                " class="dorm-form """ + formClass + """
+                " data-selected-room-id="
+                """ + escapeHtml(selectedRoomId) + """
+                " id="
+                """ + escapeHtml(sectionId) + """
+                ">
+                    <input type="hidden" name="tab" value="dorms">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>学号</label>
+                            <input name="studentId" value="
+                """ + escapeHtml(selectedStudentId) + """
+                " placeholder="
+                """ + escapeHtml(studentPlaceholder) + """
+                " required>
+                        </div>
+                        <div class="form-group">
+                            <label>宿舍楼</label>
+                            <select name="buildingId" class="building-select" required>
+                                """ + renderBuildingOptionsWithSelected(buildings, selectedBuildingId) + """
                             </select>
-                        </label>
-                        <label>楼层<input type="number" name="lookupFloorNumber" min="1" value="
-                """).append(escapeHtml(lookupFloorNumber)).append("""
-                " placeholder="例如 3" required></label>
-                        <label>房间号<input name="lookupRoomNumber" value="
-                """).append(escapeHtml(lookupRoomNumber)).append("""
-                " placeholder="例如 301" required></label>
-                        <button type="submit">按楼层和房间号查询</button>
-                    </form>
-                """);
+                        </div>
+                        <div class="form-group">
+                            <label>房间</label>
+                            <select name="roomId" class="room-select" required disabled>
+                                <option value="">请先选择宿舍楼</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>床号</label>
+                            <input type="number" name="bedNumber" min="1" max="4" value="
+                """ + escapeHtml(selectedBedNumber) + """
+                " required>
+                        </div>
+                    </div>
+                    <div class="actions"><button type="submit"
+                """ + buttonClass + """
+                >""" + escapeHtml(buttonLabel) + """
+                    </button></div>
+                </form>
+                <div class="result">先选宿舍楼，再选该楼栋下的房间。</div>
+                """;
+    }
 
-        html.append(result).append("""
-                </section>
-                """);
-        return html.toString();
+    private String renderStudentDormResult(StudentDormView dormByStudent) {
+        if (dormByStudent == null) {
+            return "";
+        }
+        return """
+                <div class="result">
+                    <strong>查询结果</strong><br><br>
+                    学号：""" + escapeHtml(dormByStudent.studentId()) + """
+                    <br>姓名：""" + escapeHtml(dormByStudent.studentName()) + """
+                    <br>宿舍楼：""" + escapeHtml(nullToDash(dormByStudent.buildingName())) + """
+                    <br>房间号：""" + escapeHtml(nullToDash(dormByStudent.roomNumber())) + """
+                    <br>床号：""" + (dormByStudent.bedNumber() == null ? "-" : dormByStudent.bedNumber()) + """
+                </div>
+                """;
+    }
+
+    private String renderRoomStudentsResult(Room roomByLocation, List<StudentDormView> studentsByRoom) {
+        if (roomByLocation == null && (studentsByRoom == null || studentsByRoom.isEmpty())) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder("<div class=\"result\"><strong>查询结果</strong><br><br>");
+        if (roomByLocation != null) {
+            result.append("当前查询房间：房间 ID ").append(roomByLocation.roomId())
+                    .append(" / 楼层 ").append(roomByLocation.floorNumber())
+                    .append(" / 房间号 ").append(escapeHtml(roomByLocation.roomNumber()))
+                    .append("<br><br>");
+        }
+        if (studentsByRoom == null || studentsByRoom.isEmpty()) {
+            result.append("当前房间暂无学生入住。");
+        } else {
+            for (StudentDormView view : studentsByRoom) {
+                result.append(escapeHtml(view.studentName()))
+                        .append("（").append(escapeHtml(view.studentId())).append("）")
+                        .append(" - 床号 ").append(view.bedNumber()).append("<br>");
+            }
+        }
+        result.append("</div>");
+        return result.toString();
     }
 
     private String renderStudentTable(List<Student> students) {
+        if (students.isEmpty()) {
+            return "<div class=\"empty\">暂无学生记录</div>";
+        }
         StringBuilder rows = new StringBuilder();
         for (Student student : students) {
             rows.append("<tr><td>")
@@ -570,22 +975,14 @@ public class DashboardHandler extends BaseHandler {
                     .append(escapeHtml(student.gender().label()))
                     .append("</td></tr>");
         }
-        return """
-                <section class="card wide">
-                    <h2>学生列表</h2>
-                    <table>
-                        <thead>
-                        <tr><th>学号</th><th>姓名</th><th>班级</th><th>年级</th><th>性别</th></tr>
-                        </thead>
-                        <tbody>
-                """ + rows + """
-                        </tbody>
-                    </table>
-                </section>
-                """;
+        return "<div class=\"scroll-x\"><table><thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>年级</th><th>性别</th></tr></thead><tbody>"
+                + rows + "</tbody></table></div>";
     }
 
     private String renderBuildingTable(List<Building> buildings) {
+        if (buildings.isEmpty()) {
+            return "<div class=\"empty\">暂无宿舍楼记录</div>";
+        }
         StringBuilder rows = new StringBuilder();
         for (Building building : buildings) {
             rows.append("<tr><td>")
@@ -594,31 +991,22 @@ public class DashboardHandler extends BaseHandler {
                     .append(escapeHtml(building.buildingCode()))
                     .append("</td><td>")
                     .append(escapeHtml(building.buildingName()))
-                    .append("</td><td>")
+                    .append("</td><td><span class=\"pill accent\">")
                     .append(escapeHtml(building.genderPolicy().label()))
-                    .append("</td></tr>");
+                    .append("</span></td></tr>");
         }
-        return """
-                <section class="card wide">
-                    <h2>宿舍楼列表</h2>
-                    <table>
-                        <thead>
-                        <tr><th>ID</th><th>编号</th><th>名称</th><th>入住策略</th></tr>
-                        </thead>
-                        <tbody>
-                """ + rows + """
-                        </tbody>
-                    </table>
-                </section>
-                """;
+        return "<div class=\"scroll-x\"><table><thead><tr><th>ID</th><th>编号</th><th>名称</th><th>入住策略</th></tr></thead><tbody>"
+                + rows + "</tbody></table></div>";
     }
 
     private String renderRoomTable(List<Room> rooms, List<Building> buildings) {
+        if (rooms.isEmpty()) {
+            return "<div class=\"empty\">暂无房间记录</div>";
+        }
         Map<Long, Building> buildingsById = new HashMap<>();
         for (Building building : buildings) {
             buildingsById.put(building.buildingId(), building);
         }
-
         StringBuilder rows = new StringBuilder();
         for (Room room : rooms) {
             Building building = buildingsById.get(room.buildingId());
@@ -632,115 +1020,28 @@ public class DashboardHandler extends BaseHandler {
                     .append(room.floorNumber())
                     .append("</td></tr>");
         }
-        return """
-                <section class="card wide">
-                    <h2>房间列表</h2>
-                    <table>
-                        <thead>
-                        <tr><th>ID</th><th>房间号</th><th>所属楼栋</th><th>楼层</th></tr>
-                        </thead>
-                        <tbody>
-                """ + rows + """
-                        </tbody>
-                    </table>
-                </section>
-                """;
+        return "<div class=\"scroll-x\"><table><thead><tr><th>ID</th><th>房间号</th><th>所属楼栋</th><th>楼层</th></tr></thead><tbody>"
+                + rows + "</tbody></table></div>";
     }
 
-    private String renderDormForm(
-            String title,
-            String action,
-            String formClass,
-            String studentPlaceholder,
-            String buttonLabel,
-            String emptyMessage,
-            List<Building> buildings,
-            List<Room> rooms,
-            String sectionId,
-            String selectedStudentId,
-            String selectedBuildingId,
-            String selectedRoomId,
-            String selectedBedNumber
-    ) {
-        if (buildings.isEmpty()) {
-            return "<section class=\"card\" id=\"" + escapeHtml(sectionId) + "\"><h2>" + escapeHtml(title)
-                    + "</h2><div class=\"result\">" + escapeHtml(emptyMessage) + "</div></section>";
-        }
-
-        Map<Long, List<Room>> roomsByBuilding = groupRoomsByBuilding(rooms);
-        StringBuilder html = new StringBuilder();
-        html.append("<section class=\"card\" id=\"").append(escapeHtml(sectionId)).append("\">");
-        html.append("<h2>").append(escapeHtml(title)).append("</h2>");
-        html.append("<form method=\"post\" action=\"").append(action).append("\" class=\"dorm-form ")
-                .append(formClass).append("\" data-selected-room-id=\"").append(escapeHtml(selectedRoomId)).append("\">");
-        html.append("<label>学号<input name=\"studentId\" placeholder=\"").append(escapeHtml(studentPlaceholder))
-                .append("\" value=\"").append(escapeHtml(selectedStudentId)).append("\" required></label>");
-        html.append("<label>宿舍楼<select name=\"buildingId\" class=\"building-select\" required>");
-        appendBuildingOptionsWithSelected(html, buildings, "请选择宿舍楼", selectedBuildingId);
-        html.append("</select></label>");
-        html.append("<label>房间");
-        html.append("<select name=\"roomId\" class=\"room-select\" required disabled>");
-        html.append("<option value=\"\">请先选择宿舍楼</option>");
-        html.append("</select></label>");
-        html.append("<label>床号<input type=\"number\" name=\"bedNumber\" min=\"1\" max=\"4\" value=\"")
-                .append(escapeHtml(selectedBedNumber)).append("\" required></label>");
-        html.append("<button type=\"submit\">").append(escapeHtml(buttonLabel)).append("</button>");
-        html.append("</form>");
-
-        if (rooms.isEmpty()) {
-            html.append("<div class=\"result\">当前还没有房间，请先给宿舍楼添加房间。</div>");
-        } else {
-            html.append("<div class=\"result\">");
-            html.append("先选宿舍楼，再选该楼栋下的房间。");
-            for (Building building : buildings) {
-                int roomCount = roomsByBuilding.getOrDefault(building.buildingId(), List.of()).size();
-                html.append("<br>").append(escapeHtml(building.buildingName()))
-                        .append("：").append(roomCount).append(" 个房间");
-            }
-            html.append("</div>");
-        }
-
-        html.append("</section>");
-        return html.toString();
+    private String renderBuildingOptions(List<Building> buildings) {
+        return renderBuildingOptionsWithSelected(buildings, "");
     }
 
-    private void appendBuildingOptions(StringBuilder html, List<Building> buildings, String placeholder) {
-        html.append("<option value=\"\">").append(escapeHtml(placeholder)).append("</option>");
+    private String renderBuildingOptionsWithSelected(List<Building> buildings, String selectedBuildingId) {
+        StringBuilder options = new StringBuilder("<option value=\"\">请选择宿舍楼</option>");
         for (Building building : buildings) {
-            html.append("<option value=\"").append(building.buildingId()).append("\">")
-                    .append(escapeHtml(building.buildingCode()))
-                    .append(" - ")
-                    .append(escapeHtml(building.buildingName()))
-                    .append("</option>");
-        }
-    }
-
-    private void appendBuildingOptionsWithSelected(
-            StringBuilder html,
-            List<Building> buildings,
-            String placeholder,
-            String selectedBuildingId
-    ) {
-        html.append("<option value=\"\">").append(escapeHtml(placeholder)).append("</option>");
-        for (Building building : buildings) {
-            html.append("<option value=\"").append(building.buildingId()).append("\"");
+            options.append("<option value=\"").append(building.buildingId()).append("\"");
             if (String.valueOf(building.buildingId()).equals(selectedBuildingId)) {
-                html.append(" selected");
+                options.append(" selected");
             }
-            html.append(">")
+            options.append(">")
                     .append(escapeHtml(building.buildingCode()))
                     .append(" - ")
                     .append(escapeHtml(building.buildingName()))
                     .append("</option>");
         }
-    }
-
-    private Map<Long, List<Room>> groupRoomsByBuilding(List<Room> rooms) {
-        Map<Long, List<Room>> roomsByBuilding = new HashMap<>();
-        for (Room room : rooms) {
-            roomsByBuilding.computeIfAbsent(room.buildingId(), ignored -> new ArrayList<>()).add(room);
-        }
-        return roomsByBuilding;
+        return options.toString();
     }
 
     private String renderFormScript() {
@@ -749,13 +1050,6 @@ public class DashboardHandler extends BaseHandler {
                     const roomMap = {
                 """ + buildRoomMapJson() + """
                     };
-
-                    if (window.location.hash) {
-                        const target = document.querySelector(window.location.hash);
-                        if (target) {
-                            target.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }
-                    }
 
                     document.querySelectorAll(".dorm-form").forEach((form) => {
                         const buildingSelect = form.querySelector(".building-select");
@@ -802,7 +1096,11 @@ public class DashboardHandler extends BaseHandler {
     private String buildRoomMapJson() {
         try {
             List<Room> rooms = roomService.listRooms();
-            Map<Long, List<Room>> roomsByBuilding = groupRoomsByBuilding(rooms);
+            Map<Long, List<Room>> roomsByBuilding = new HashMap<>();
+            for (Room room : rooms) {
+                roomsByBuilding.computeIfAbsent(room.buildingId(), ignored -> new ArrayList<>()).add(room);
+            }
+
             StringBuilder json = new StringBuilder();
             boolean firstBuilding = true;
             for (Map.Entry<Long, List<Room>> entry : roomsByBuilding.entrySet()) {
@@ -833,16 +1131,59 @@ public class DashboardHandler extends BaseHandler {
         return """
                 <!DOCTYPE html>
                 <html lang="zh-CN">
-                <head><meta charset="UTF-8"><title>请求失败</title></head>
-                <body style="font-family: Microsoft YaHei, sans-serif; padding: 24px;">
-                    <h2>请求失败</h2>
-                    <p>
-                """ + escapeHtml(error) + """
-                    </p>
-                    <p><a href="/">返回首页</a></p>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>请求失败</title>
+                    <style>
+                        body {
+                            margin: 0;
+                            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+                            background: #f4f6f8;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                        }
+                        .box {
+                            background: #fff;
+                            border-radius: 20px;
+                            padding: 40px;
+                            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+                            max-width: 480px;
+                            text-align: center;
+                        }
+                        h2 { margin: 0 0 16px; color: #dc2626; }
+                        p { color: #4b5563; margin-bottom: 24px; }
+                        a {
+                            display: inline-block;
+                            padding: 10px 20px;
+                            background: #2563eb;
+                            color: #fff;
+                            text-decoration: none;
+                            border-radius: 10px;
+                            font-weight: 600;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="box">
+                        <h2>请求失败</h2>
+                        <p>""" + escapeHtml(error) + """
+                        </p>
+                        <a href="/">返回首页</a>
+                    </div>
                 </body>
                 </html>
                 """;
+    }
+
+    private String activeClass(String activeTab, String tab) {
+        return normalizeTab(activeTab).equals(tab) ? "active" : "";
+    }
+
+    private String normalizeTab(String tab) {
+        return VALID_TABS.contains(tab) ? tab : "dashboard";
     }
 
     private String nullToDash(String value) {

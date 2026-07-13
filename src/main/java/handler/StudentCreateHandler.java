@@ -27,11 +27,11 @@ public class StudentCreateHandler extends BaseHandler {
                     requireText(params, "grade", "年级"),
                     requireText(params, "gender", "性别")
             );
-            redirect(exchange, "/?message=" + encode("学生创建成功: " + student.studentName()));
+            redirect(exchange, "/?tab=students&message=" + encode("学生创建成功: " + student.studentName()));
         } catch (IllegalArgumentException exception) {
-            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+            redirect(exchange, "/?tab=students&error=" + encode(exception.getMessage()));
         } catch (SQLException exception) {
-            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+            redirect(exchange, "/?tab=students&error=" + encode("数据库操作失败: " + exception.getMessage()));
         }
     }
 }
