@@ -25,11 +25,11 @@ public class BuildingCreateHandler extends BaseHandler {
                     requireText(params, "name", "楼栋名称"),
                     requireText(params, "genderPolicy", "入住策略")
             );
-            redirect(exchange, "/?message=" + encode("宿舍楼创建成功: " + building.buildingName()));
+            redirect(exchange, "/?tab=buildings&message=" + encode("宿舍楼创建成功: " + building.buildingName()));
         } catch (IllegalArgumentException exception) {
-            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+            redirect(exchange, "/?tab=buildings&error=" + encode(exception.getMessage()));
         } catch (SQLException exception) {
-            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+            redirect(exchange, "/?tab=buildings&error=" + encode("数据库操作失败: " + exception.getMessage()));
         }
     }
 }

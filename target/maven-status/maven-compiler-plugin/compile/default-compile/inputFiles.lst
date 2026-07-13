@@ -10,8 +10,10 @@ D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\handler\StudentCreateHan
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\Main.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Building.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\BuildingGenderPolicy.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\BuildingOccupancy.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\DormAssignment.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Gender.java
+D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\OccupancyOverview.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Room.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\Student.java
 D:\Course\JAVA\DormitoryMgr\JAVA_homework\src\main\java\model\StudentDormView.java

@@ -25,11 +25,11 @@ public class RoomCreateHandler extends BaseHandler {
                     requireLong(params, "buildingId", "宿舍楼 ID"),
                     requireInt(params, "floorNumber", "楼层")
             );
-            redirect(exchange, "/?message=" + encode("房间创建成功: " + room.roomNumber()));
+            redirect(exchange, "/?tab=rooms&message=" + encode("房间创建成功: " + room.roomNumber()));
         } catch (IllegalArgumentException exception) {
-            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+            redirect(exchange, "/?tab=rooms&error=" + encode(exception.getMessage()));
         } catch (SQLException exception) {
-            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+            redirect(exchange, "/?tab=rooms&error=" + encode("数据库操作失败: " + exception.getMessage()));
         }
     }
 }

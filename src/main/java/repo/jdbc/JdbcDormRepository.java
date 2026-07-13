@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import model.DormAssignment;
@@ -119,6 +121,28 @@ public class JdbcDormRepository implements DormRepository {
                 resultSet.getLong("room_id"),
                 resultSet.getInt("bed_number")
         );
+    }
+
+    @Override
+    public long countAllAssignments() throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM dorm_assignments")) {
+            resultSet.next();
+            return resultSet.getLong(1);
+        }
+    }
+
+    @Override
+    public Map<Long, Long> countAssignmentsByBuilding() throws SQLException {
+        Map<Long, Long> counts = new HashMap<>();
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(
+                     "SELECT building_id, COUNT(*) FROM dorm_assignments GROUP BY building_id")) {
+            while (resultSet.next()) {
+                counts.put(resultSet.getLong(1), resultSet.getLong(2));
+            }
+        }
+        return counts;
     }
 }
 

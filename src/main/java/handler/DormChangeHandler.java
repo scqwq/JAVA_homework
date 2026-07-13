@@ -26,11 +26,11 @@ public class DormChangeHandler extends BaseHandler {
                     requireLong(params, "roomId", "房间 ID"),
                     requireInt(params, "bedNumber", "床号")
             );
-            redirect(exchange, "/?message=" + encode("调宿成功，新的床号: " + dormAssignment.bedNumber()));
+            redirect(exchange, "/?tab=dorms&message=" + encode("调宿成功，新的床号: " + dormAssignment.bedNumber()));
         } catch (IllegalArgumentException exception) {
-            redirect(exchange, "/?error=" + encode(exception.getMessage()));
+            redirect(exchange, "/?tab=dorms&error=" + encode(exception.getMessage()));
         } catch (SQLException exception) {
-            redirect(exchange, "/?error=" + encode("数据库操作失败: " + exception.getMessage()));
+            redirect(exchange, "/?tab=dorms&error=" + encode("数据库操作失败: " + exception.getMessage()));
         }
     }
 }

@@ -10,12 +10,14 @@ ui\DormMenu.class
 Main.class
 model\StudentDormView.class
 model\Student.class
+model\BuildingOccupancy.class
 model\DormAssignment.class
 Router.class
 repo\interfaces\BuildingRepository.class
 handler\BuildingCreateHandler.class
 model\BuildingGenderPolicy.class
 repo\interfaces\DormRepository.class
+model\OccupancyOverview.class
 ui\StudentMenu.class
 handler\DormAssignHandler.class
 database\DatabaseDialect.class
