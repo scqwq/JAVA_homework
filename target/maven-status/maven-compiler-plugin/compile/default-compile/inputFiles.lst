@@ -1,5 +1,12 @@
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\database\DatabaseConnection.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\database\DatabaseDialect.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\BaseHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\BuildingCreateHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\DashboardHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\DormAssignHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\DormChangeHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\RoomCreateHandler.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\handler\StudentCreateHandler.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\Main.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\Building.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\model\BuildingGenderPolicy.java
@@ -16,6 +23,7 @@ D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcBuildingRe
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcDormRepository.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcRoomRepository.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\repo\jdbc\JdbcStudentRepository.java
+D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\Router.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\BuildingService.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\DormService.java
 D:\传\新建文件夹 (6)\JAVA\大作业\src\main\java\service\RoomService.java
