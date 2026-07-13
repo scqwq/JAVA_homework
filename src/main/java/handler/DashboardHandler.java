@@ -523,9 +523,11 @@ public class DashboardHandler extends BaseHandler {
                 <section class="card" id="room-lookup">
                     <h2>按房间查学生</h2>
                     <form method="get" action="/#room-lookup">
-                        <label>房间 ID<input name="lookupRoomId" value="
-                """).append(escapeHtml(lookupRoomId)).append("""
-                " placeholder="例如 1"></label>
+                """);
+        html.append("        <label>房间 ID<input name=\"lookupRoomId\" value=\"")
+                .append(escapeHtml(lookupRoomId))
+                .append("\" placeholder=\"例如 1\"></label>\n");
+        html.append("""
                         <button type="submit">按房间 ID 查询</button>
                     </form>
                 """);
@@ -539,12 +541,14 @@ public class DashboardHandler extends BaseHandler {
         html.append("""
                             </select>
                         </label>
-                        <label>楼层<input type="number" name="lookupFloorNumber" min="1" value="
-                """).append(escapeHtml(lookupFloorNumber)).append("""
-                " placeholder="例如 3" required></label>
-                        <label>房间号<input name="lookupRoomNumber" value="
-                """).append(escapeHtml(lookupRoomNumber)).append("""
-                " placeholder="例如 301" required></label>
+                """);
+        html.append("        <label>楼层<input type=\"number\" name=\"lookupFloorNumber\" min=\"1\" value=\"")
+                .append(escapeHtml(lookupFloorNumber))
+                .append("\" placeholder=\"例如 3\" required></label>\n");
+        html.append("        <label>房间号<input name=\"lookupRoomNumber\" value=\"")
+                .append(escapeHtml(lookupRoomNumber))
+                .append("\" placeholder=\"例如 301\" required></label>\n");
+        html.append("""
                         <button type="submit">按楼层和房间号查询</button>
                     </form>
                 """);
