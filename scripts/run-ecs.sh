@@ -5,6 +5,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+MODE="foreground"
+for arg in "$@"; do
+  case "$arg" in
+    --daemon)
+      MODE="daemon"
+      ;;
+    --help|-h)
+      echo "用法: bash scripts/run-ecs.sh [--daemon]"
+      echo "  不带参数: 前台启动，关闭终端后服务会停止"
+      echo "  --daemon: 后台启动，关闭终端后服务继续运行"
+      exit 0
+      ;;
+  esac
+done
+
 require_java21() {
   if ! command -v java >/dev/null 2>&1; then
     echo "未检测到 java，请先安装 JDK 21。"
@@ -61,6 +76,21 @@ fi
 
 echo "开始编译项目..."
 "$MAVEN_CMD" clean compile
+
+if [[ "$MODE" == "daemon" ]]; then
+  mkdir -p logs .run
+  LOG_FILE="logs/run-ecs.log"
+  PID_FILE=".run/run-ecs.pid"
+
+  echo "后台启动网站..."
+  echo "日志文件: $LOG_FILE"
+  echo "PID 文件: $PID_FILE"
+  echo "如需停止，可执行: kill \$(cat $PID_FILE)"
+  nohup "$MAVEN_CMD" exec:java >"$LOG_FILE" 2>&1 &
+  echo $! >"$PID_FILE"
+  echo "启动完成，进程 PID: $(cat "$PID_FILE")"
+  exit 0
+fi
 
 echo "启动网站..."
 echo "默认访问地址: http://服务器公网IP:8080"

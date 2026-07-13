@@ -21,6 +21,8 @@
 target/
 .codex-tmp-classes-*/
 .codex-web-check-*/
+logs/
+.run/
 
 # env file
 .env

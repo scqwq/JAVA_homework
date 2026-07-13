@@ -896,9 +896,15 @@ public class DashboardHandler extends BaseHandler {
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>楼层</label>
+                            <select class="floor-select" required disabled>
+                                <option value="">请先选择宿舍楼</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>房间</label>
                             <select name="roomId" class="room-select" required disabled>
-                                <option value="">请先选择宿舍楼</option>
+                                <option value="">请先选择楼层</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -913,7 +919,7 @@ public class DashboardHandler extends BaseHandler {
                 >""" + escapeHtml(buttonLabel) + """
                     </button></div>
                 </form>
-                <div class="result">先选宿舍楼，再选该楼栋下的房间。</div>
+                <div class="result">先选宿舍楼，再选楼层，最后选择该楼层下的房间。</div>
                 """;
     }
 
@@ -1053,12 +1059,55 @@ public class DashboardHandler extends BaseHandler {
 
                     document.querySelectorAll(".dorm-form").forEach((form) => {
                         const buildingSelect = form.querySelector(".building-select");
+                        const floorSelect = form.querySelector(".floor-select");
                         const roomSelect = form.querySelector(".room-select");
                         const selectedRoomId = form.dataset.selectedRoomId || "";
 
                         const syncRooms = () => {
                             const buildingId = buildingSelect.value;
                             const rooms = roomMap[buildingId] || [];
+                            const selectedRoom = rooms.find((room) => selectedRoomId && selectedRoomId === room.id);
+                            const floors = [...new Set(rooms.map((room) => String(room.floor)))].sort((a, b) => Number(a) - Number(b));
+
+                            floorSelect.innerHTML = "";
+                            roomSelect.innerHTML = "";
+
+                            if (!buildingId) {
+                                floorSelect.disabled = true;
+                                floorSelect.innerHTML = '<option value="">请先选择宿舍楼</option>';
+                                roomSelect.disabled = true;
+                                roomSelect.innerHTML = '<option value="">请先选择宿舍楼</option>';
+                                return;
+                            }
+
+                            if (rooms.length === 0) {
+                                floorSelect.disabled = true;
+                                floorSelect.innerHTML = '<option value="">该宿舍楼下暂无楼层</option>';
+                                roomSelect.disabled = true;
+                                roomSelect.innerHTML = '<option value="">该宿舍楼下暂无房间</option>';
+                                return;
+                            }
+
+                            floorSelect.disabled = false;
+                            floorSelect.innerHTML = '<option value="">请选择楼层</option>';
+                            floors.forEach((floor) => {
+                                const option = document.createElement("option");
+                                option.value = floor;
+                                option.textContent = floor + ' 层';
+                                if (selectedRoom && floor === String(selectedRoom.floor)) {
+                                    option.selected = true;
+                                }
+                                floorSelect.appendChild(option);
+                            });
+
+                            syncRoomOptions();
+                        };
+
+                        const syncRoomOptions = () => {
+                            const buildingId = buildingSelect.value;
+                            const floorNumber = floorSelect.value;
+                            const rooms = roomMap[buildingId] || [];
+
                             roomSelect.innerHTML = "";
 
                             if (!buildingId) {
@@ -1067,15 +1116,22 @@ public class DashboardHandler extends BaseHandler {
                                 return;
                             }
 
-                            if (rooms.length === 0) {
+                            if (!floorNumber) {
                                 roomSelect.disabled = true;
-                                roomSelect.innerHTML = '<option value="">该宿舍楼下暂无房间</option>';
+                                roomSelect.innerHTML = '<option value="">请先选择楼层</option>';
+                                return;
+                            }
+
+                            const filteredRooms = rooms.filter((room) => String(room.floor) === floorNumber);
+                            if (filteredRooms.length === 0) {
+                                roomSelect.disabled = true;
+                                roomSelect.innerHTML = '<option value="">该楼层下暂无房间</option>';
                                 return;
                             }
 
                             roomSelect.disabled = false;
                             roomSelect.innerHTML = '<option value="">请选择房间</option>';
-                            rooms.forEach((room) => {
+                            filteredRooms.forEach((room) => {
                                 const option = document.createElement("option");
                                 option.value = room.id;
                                 option.textContent = room.label;
@@ -1087,6 +1143,7 @@ public class DashboardHandler extends BaseHandler {
                         };
 
                         buildingSelect.addEventListener("change", syncRooms);
+                        floorSelect.addEventListener("change", syncRoomOptions);
                         syncRooms();
                     });
                 </script>
@@ -1115,7 +1172,8 @@ public class DashboardHandler extends BaseHandler {
                         json.append(",");
                     }
                     firstRoom = false;
-                    json.append("{\"id\":\"").append(room.roomId()).append("\",\"label\":\"房间 ID ")
+                    json.append("{\"id\":\"").append(room.roomId()).append("\",\"floor\":")
+                            .append(room.floorNumber()).append(",\"label\":\"房间 ID ")
                             .append(room.roomId()).append(" / 房间号 ")
                             .append(escapeJs(room.roomNumber())).append("\"}");
                 }
