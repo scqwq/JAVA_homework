@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+// 用内嵌的CSS央视和JS标签 ，用Java StringBuilder 拼接生成前端
 public class DashboardHandler extends BaseHandler {
     private static final Set<String> VALID_TABS = Set.of(
             "dashboard", "students", "buildings", "rooms", "dorms", "queries"
@@ -566,7 +566,7 @@ public class DashboardHandler extends BaseHandler {
                 lookupFloorNumber,
                 lookupRoomNumber
         ));
-        html.append(renderFormScript()).append("""
+        html.append(renderFormScript(rooms)).append("""
                 </main>
                 </body>
                 </html>
@@ -1045,11 +1045,11 @@ public class DashboardHandler extends BaseHandler {
         return options.toString();
     }
 
-    private String renderFormScript() {
+    private String renderFormScript(List<Room> rooms) {
         return """
                 <script>
                     const roomMap = {
-                """ + buildRoomMapJson() + """
+                """ + buildRoomMapJson(rooms) + """
                     };
 
                     document.querySelectorAll(".dorm-form").forEach((form) => {
@@ -1145,39 +1145,34 @@ public class DashboardHandler extends BaseHandler {
                 """;
     }
 
-    private String buildRoomMapJson() {
-        try {
-            List<Room> rooms = roomService.listRooms();
-            Map<Long, List<Room>> roomsByBuilding = new HashMap<>();
-            for (Room room : rooms) {
-                roomsByBuilding.computeIfAbsent(room.buildingId(), ignored -> new ArrayList<>()).add(room);
-            }
+    private String buildRoomMapJson(List<Room> rooms) {
+        Map<Long, List<Room>> roomsByBuilding = new HashMap<>();
+        for (Room room : rooms) {
+            roomsByBuilding.computeIfAbsent(room.buildingId(), ignored -> new ArrayList<>()).add(room);
+        }
 
-            StringBuilder json = new StringBuilder();
-            boolean firstBuilding = true;
-            for (Map.Entry<Long, List<Room>> entry : roomsByBuilding.entrySet()) {
-                if (!firstBuilding) {
+        StringBuilder json = new StringBuilder();
+        boolean firstBuilding = true;
+        for (Map.Entry<Long, List<Room>> entry : roomsByBuilding.entrySet()) {
+            if (!firstBuilding) {
+                json.append(",");
+            }
+            firstBuilding = false;
+            json.append("\"").append(entry.getKey()).append("\":[");
+            boolean firstRoom = true;
+            for (Room room : entry.getValue()) {
+                if (!firstRoom) {
                     json.append(",");
                 }
-                firstBuilding = false;
-                json.append("\"").append(entry.getKey()).append("\":[");
-                boolean firstRoom = true;
-                for (Room room : entry.getValue()) {
-                    if (!firstRoom) {
-                        json.append(",");
-                    }
-                    firstRoom = false;
-                    json.append("{\"id\":\"").append(room.roomId()).append("\",\"floor\":")
-                            .append(room.floorNumber()).append(",\"label\":\"房间 ID ")
-                            .append(room.roomId()).append(" / 房间号 ")
-                            .append(escapeJs(room.roomNumber())).append("\"}");
-                }
-                json.append("]");
+                firstRoom = false;
+                json.append("{\"id\":\"").append(room.roomId()).append("\",\"floor\":")
+                        .append(room.floorNumber()).append(",\"label\":\"房间 ID ")
+                        .append(room.roomId()).append(" / 房间号 ")
+                        .append(escapeJs(room.roomNumber())).append("\"}");
             }
-            return json.toString();
-        } catch (SQLException exception) {
-            return "";
+            json.append("]");
         }
+        return json.toString();
     }
 
     private String renderErrorPage(String error) {
