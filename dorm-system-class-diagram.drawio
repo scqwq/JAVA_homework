@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-07-16T00:00:00.000Z" agent="Claude" version="22.1.11">
+  <diagram name="宿舍管理系统-主要类图" id="dorm-system-class-diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+
+        <!-- ===================== 模型层 (Model) ===================== -->
+        <!-- Student 实体 -->
+        <mxCell id="model-Student" value="&lt;b&gt;Student&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;studentId : String&lt;br&gt;studentName : String&lt;br&gt;className : String&lt;br&gt;grade : String&lt;br&gt;gender : Gender" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Building 实体 -->
+        <mxCell id="model-Building" value="&lt;b&gt;Building&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;buildingId : long&lt;br&gt;buildingCode : String&lt;br&gt;buildingName : String&lt;br&gt;genderPolicy : BuildingGenderPolicy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="180" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Room 实体 -->
+        <mxCell id="model-Room" value="&lt;b&gt;Room&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;roomId : long&lt;br&gt;roomNumber : String&lt;br&gt;buildingId : long&lt;br&gt;floorNumber : int" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="180" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- DormAssignment 实体 -->
+        <mxCell id="model-DormAssignment" value="&lt;b&gt;DormAssignment&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;assignmentId : long&lt;br&gt;studentId : String&lt;br&gt;buildingId : long&lt;br&gt;roomId : long&lt;br&gt;bedNumber : int" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="570" width="180" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- Gender 枚举 -->
+        <mxCell id="model-Gender" value="&lt;b&gt;Gender&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;label : String&lt;br&gt;&lt;br&gt;+ MALE(&quot;男&quot;)&lt;br&gt;+ FEMALE(&quot;女&quot;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="260" y="60" width="160" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- BuildingGenderPolicy 枚举 -->
+        <mxCell id="model-BuildingGenderPolicy" value="&lt;b&gt;BuildingGenderPolicy&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;label : String&lt;br&gt;&lt;br&gt;+ MALE_ONLY(&quot;男&quot;)&lt;br&gt;+ FEMALE_ONLY(&quot;女&quot;)&lt;br&gt;+ MIXED_BY_FLOOR(&quot;男女分层&quot;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="260" y="220" width="200" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- StudentDormView 视图对象 -->
+        <mxCell id="model-StudentDormView" value="&lt;b&gt;StudentDormView&lt;/b&gt;&lt;br&gt;(跨表视图)&lt;br&gt;───────────────&lt;br&gt;studentId : String&lt;br&gt;studentName : String&lt;br&gt;className : String&lt;br&gt;grade : String&lt;br&gt;gender : Gender&lt;br&gt;buildingCode : String&lt;br&gt;buildingName : String&lt;br&gt;roomNumber : String&lt;br&gt;bedNumber : Integer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="260" y="410" width="210" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- BuildingOccupancy 统计对象 -->
+        <mxCell id="model-BuildingOccupancy" value="&lt;b&gt;BuildingOccupancy&lt;/b&gt;&lt;br&gt;(统计视图)&lt;br&gt;───────────────&lt;br&gt;buildingId : long&lt;br&gt;buildingName : String&lt;br&gt;totalRooms : long&lt;br&gt;totalBeds : long&lt;br&gt;occupiedBeds : long&lt;br&gt;occupancyRate : double" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="510" y="410" width="210" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- OccupancyOverview 统计对象 -->
+        <mxCell id="model-OccupancyOverview" value="&lt;b&gt;OccupancyOverview&lt;/b&gt;&lt;br&gt;(统计视图)&lt;br&gt;───────────────&lt;br&gt;totalRooms : long&lt;br&gt;totalBeds : long&lt;br&gt;occupiedBeds : long&lt;br&gt;occupancyRate : double&lt;br&gt;buildingStats : List&lt;BuildingOccupancy&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="510" y="60" width="230" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== 仓储接口层 (Repository Interfaces) ===================== -->
+        <!-- BuildingRepository 接口 -->
+        <mxCell id="repo-BuildingRepository" value="&lt;b&gt;BuildingRepository&lt;/b&gt;&lt;br&gt;(interface)&lt;br&gt;───────────────&lt;br&gt;+ save(Building) : Building&lt;br&gt;+ findAll() : List&lt;Building&gt;&lt;br&gt;+ findById(long) : Optional&lt;Building&gt;&lt;br&gt;+ findByCode(String) : Optional&lt;Building&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="60" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- RoomRepository 接口 -->
+        <mxCell id="repo-RoomRepository" value="&lt;b&gt;RoomRepository&lt;/b&gt;&lt;br&gt;(interface)&lt;br&gt;───────────────&lt;br&gt;+ save(Room) : Room&lt;br&gt;+ findAll() : List&lt;Room&gt;&lt;br&gt;+ findByBuildingId(long) : List&lt;Room&gt;&lt;br&gt;+ findById(long) : Optional&lt;Room&gt;&lt;br&gt;+ findByBuildingFloorAndRoomNumber(...) : Optional&lt;Room&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="210" width="260" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- StudentRepository 接口 -->
+        <mxCell id="repo-StudentRepository" value="&lt;b&gt;StudentRepository&lt;/b&gt;&lt;br&gt;(interface)&lt;br&gt;───────────────&lt;br&gt;+ save(Student) : Student&lt;br&gt;+ findAll() : List&lt;Student&gt;&lt;br&gt;+ findById(String) : Optional&lt;Student&gt;&lt;br&gt;+ findStudentsByRoom(long) : List&lt;StudentDormView&gt;&lt;br&gt;+ findDormByStudentId(String) : Optional&lt;StudentDormView&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="380" width="260" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- DormRepository 接口 -->
+        <mxCell id="repo-DormRepository" value="&lt;b&gt;DormRepository&lt;/b&gt;&lt;br&gt;(interface)&lt;br&gt;───────────────&lt;br&gt;+ save(DormAssignment) : DormAssignment&lt;br&gt;+ update(DormAssignment) : DormAssignment&lt;br&gt;+ findByStudentId(String) : Optional&lt;DormAssignment&gt;&lt;br&gt;+ findByRoomId(long) : List&lt;DormAssignment&gt;&lt;br&gt;+ existsByRoomIdAndBedNumber(...) : boolean&lt;br&gt;+ countAllAssignments() : long&lt;br&gt;+ countAssignmentsByBuilding() : Map" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="570" width="280" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== JDBC 实现层 ===================== -->
+        <!-- JdbcBuildingRepository -->
+        <mxCell id="repo-JdbcBuildingRepository" value="&lt;b&gt;JdbcBuildingRepository&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;implements BuildingRepository&lt;br&gt;─────────────────&lt;br&gt;- connection : Connection&lt;br&gt;───────────────&lt;br&gt;构造器: Connection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="40" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- JdbcRoomRepository -->
+        <mxCell id="repo-JdbcRoomRepository" value="&lt;b&gt;JdbcRoomRepository&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;implements RoomRepository&lt;br&gt;─────────────────&lt;br&gt;- connection : Connection&lt;br&gt;───────────────&lt;br&gt;构造器: Connection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="180" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- JdbcStudentRepository -->
+        <mxCell id="repo-JdbcStudentRepository" value="&lt;b&gt;JdbcStudentRepository&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;implements StudentRepository&lt;br&gt;─────────────────&lt;br&gt;- connection : Connection&lt;br&gt;───────────────&lt;br&gt;构造器: Connection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="320" width="230" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- JdbcDormRepository -->
+        <mxCell id="repo-JdbcDormRepository" value="&lt;b&gt;JdbcDormRepository&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;implements DormRepository&lt;br&gt;─────────────────&lt;br&gt;- connection : Connection&lt;br&gt;───────────────&lt;br&gt;构造器: Connection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="460" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== 服务层 (Service) ===================== -->
+        <!-- BuildingService -->
+        <mxCell id="service-BuildingService" value="&lt;b&gt;BuildingService&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;- databaseConnection : DatabaseConnection&lt;br&gt;───────────────&lt;br&gt;+ createBuilding(...) : Building&lt;br&gt;+ listBuildings() : List&lt;Building&gt;&lt;br&gt;+ getBuilding(long) : Building" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="40" width="240" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- RoomService -->
+        <mxCell id="service-RoomService" value="&lt;b&gt;RoomService&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;- databaseConnection : DatabaseConnection&lt;br&gt;- buildingService : BuildingService&lt;br&gt;───────────────&lt;br&gt;+ createRoom(...) : Room&lt;br&gt;+ listRooms() : List&lt;Room&gt;&lt;br&gt;+ listRoomsByBuilding(long) : List&lt;Room&gt;&lt;br&gt;+ getRoom(long) : Room&lt;br&gt;+ getRoomByLocation(...) : Room" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="210" width="260" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- StudentService -->
+        <mxCell id="service-StudentService" value="&lt;b&gt;StudentService&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;- databaseConnection : DatabaseConnection&lt;br&gt;───────────────&lt;br&gt;+ createStudent(...) : Student&lt;br&gt;+ listStudents() : List&lt;Student&gt;&lt;br&gt;+ getStudent(String) : Student&lt;br&gt;+ getDormByStudentId(String) : StudentDormView&lt;br&gt;+ getStudentsByRoomId(long) : List&lt;...&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="420" width="260" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- DormService -->
+        <mxCell id="service-DormService" value="&lt;b&gt;DormService&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- databaseConnection : DatabaseConnection&lt;br&gt;- studentService : StudentService&lt;br&gt;- buildingService : BuildingService&lt;br&gt;- roomService : RoomService&lt;br&gt;───────────────&lt;br&gt;+ assignDorm(...) : DormAssignment&lt;br&gt;+ changeDorm(...) : DormAssignment&lt;br&gt;+ findStudentsByRoom(long) : List&lt;...&gt;&lt;br&gt;+ findDormByStudent(String) : StudentDormView&lt;br&gt;+ getOccupancyOverview() : OccupancyOverview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="620" width="280" height="210" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== Handler 层 ===================== -->
+        <!-- BaseHandler (abstract) -->
+        <mxCell id="handler-BaseHandler" value="&lt;b&gt;BaseHandler&lt;/b&gt;&lt;br&gt;(abstract)&lt;br&gt;─────────────────&lt;br&gt;# queryParams(exchange) : Map&lt;String,String&gt;&lt;br&gt;# formParams(exchange) : Map&lt;String,String&gt;&lt;br&gt;# ensureMethod(exchange, method) : void&lt;br&gt;# requireLong(params, key, label) : long&lt;br&gt;# requireInt(params, key, label) : int&lt;br&gt;# requireText(params, key, label) : String&lt;br&gt;# sendHtml(exchange, status, html) : void&lt;br&gt;# redirect(exchange, location) : void&lt;br&gt;# encode(value) : String&lt;br&gt;# escapeHtml(value) : String" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="100" width="270" height="190" as="geometry"/>
+        </mxCell>
+
+        <!-- DashboardHandler -->
+        <mxCell id="handler-DashboardHandler" value="&lt;b&gt;DashboardHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- buildingService : BuildingService&lt;br&gt;- roomService : RoomService&lt;br&gt;- studentService : StudentService&lt;br&gt;- dormService : DormService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void&lt;br&gt;+ renderPage(...) : String" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="330" width="240" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- StudentCreateHandler -->
+        <mxCell id="handler-StudentCreateHandler" value="&lt;b&gt;StudentCreateHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- studentService : StudentService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="100" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- BuildingCreateHandler -->
+        <mxCell id="handler-BuildingCreateHandler" value="&lt;b&gt;BuildingCreateHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- buildingService : BuildingService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="210" width="210" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- RoomCreateHandler -->
+        <mxCell id="handler-RoomCreateHandler" value="&lt;b&gt;RoomCreateHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- roomService : RoomService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="320" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- DormAssignHandler -->
+        <mxCell id="handler-DormAssignHandler" value="&lt;b&gt;DormAssignHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- dormService : DormService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="430" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- DormChangeHandler -->
+        <mxCell id="handler-DormChangeHandler" value="&lt;b&gt;DormChangeHandler&lt;/b&gt;&lt;br&gt;─────────────────&lt;br&gt;- dormService : DormService&lt;br&gt;───────────────&lt;br&gt;+ handle(exchange) : void&lt;br&gt;# buildRedirectUrl(...) : String" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="540" width="200" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== 基础设施层 ===================== -->
+        <!-- DatabaseConnection -->
+        <mxCell id="db-DatabaseConnection" value="&lt;b&gt;DatabaseConnection&lt;/b&gt;&lt;br&gt;(implements AutoCloseable)&lt;br&gt;───────────────&lt;br&gt;- connection : Connection&lt;br&gt;- dialect : DatabaseDialect&lt;br&gt;- buildingRepository : BuildingRepository&lt;br&gt;- roomRepository : RoomRepository&lt;br&gt;- studentRepository : StudentRepository&lt;br&gt;- dormRepository : DormRepository&lt;br&gt;───────────────&lt;br&gt;+ fromEnv() : DatabaseConnection&lt;br&gt;+ initializeSchema() : void&lt;br&gt;+ close() : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="520" width="270" height="170" as="geometry"/>
+        </mxCell>
+
+        <!-- DatabaseDialect 枚举 -->
+        <mxCell id="db-DatabaseDialect" value="&lt;b&gt;DatabaseDialect&lt;/b&gt;&lt;br&gt;(enum)&lt;br&gt;───────────────&lt;br&gt;- schemaStatements : List&lt;String&gt;&lt;br&gt;───────────────&lt;br&gt;+ POSTGRESQL&lt;br&gt;+ MYSQL&lt;br&gt;+ schemaStatements() : List&lt;String&gt;&lt;br&gt;+ fromDsn(String) : DatabaseDialect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1700" y="720" width="240" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== 入口与路由 ===================== -->
+        <!-- Main -->
+        <mxCell id="entry-Main" value="&lt;b&gt;Main&lt;/b&gt;&lt;br&gt;(系统入口)&lt;br&gt;───────────────&lt;br&gt;+ main(String[]) : void&lt;br&gt;+ alignConsoleEncoding() : void" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="700" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Router -->
+        <mxCell id="entry-Router" value="&lt;b&gt;Router&lt;/b&gt;&lt;br&gt;───────────────&lt;br&gt;+ start(BuildingService, RoomService,&lt;br&gt;&amp;nbsp; StudentService, DormService) : HttpServer&lt;br&gt;─────────────────&lt;br&gt;路由映射:&lt;br&gt;  / → DashboardHandler&lt;br&gt;  /students/create → StudentCreateHandler&lt;br&gt;  /buildings/create → BuildingCreateHandler&lt;br&gt;  /rooms/create → RoomCreateHandler&lt;br&gt;  /dorms/assign → DormAssignHandler&lt;br&gt;  /dorms/change → DormChangeHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="820" width="290" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- ===================== 关联线 ===================== -->
+
+        <!-- Building 关联关系 -->
+        <!-- Building (1:n)→ Room (一楼栋有多个房间) -->
+        <mxCell id="rel-building-room" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;" edge="1" source="model-Building" target="model-Room" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="230" y="465" as="sourcePoint"/>
+            <mxPoint x="40" y="465" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="150" y="465"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-building-room-label" value="1" style="edgeLabel;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];" edge="1" source="rel-building-room" target="rel-building-room" parent="rel-building-room">
+          <mxGeometry x="0.15" y="1" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormAssignment (n:1)→ Student -->
+        <mxCell id="rel-assignment-student" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;" edge="1" source="model-DormAssignment" target="model-Student" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="640" as="sourcePoint"/>
+            <mxPoint x="220" y="110" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="280" y="640"/>
+              <mxPoint x="280" y="110"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-assignment-student-label" value="n" style="edgeLabel;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];" edge="1" source="rel-assignment-student" target="rel-assignment-student" parent="rel-assignment-student">
+          <mxGeometry x="-0.1" y="0.5" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormAssignment (n:1)→ Building -->
+        <mxCell id="rel-assignment-building" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" source="model-DormAssignment" target="model-Building" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="150" y="640" as="sourcePoint"/>
+            <mxPoint x="40" y="330" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="150" y="640"/>
+              <mxPoint x="-20" y="640"/>
+              <mxPoint x="-20" y="330"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-assignment-building-label" value="n" style="edgeLabel;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];" edge="1" source="rel-assignment-building" target="rel-assignment-building" parent="rel-assignment-building">
+          <mxGeometry x="0.1" y="0.5" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormAssignment (n:1)→ Room -->
+        <mxCell id="rel-assignment-room" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" source="model-DormAssignment" target="model-Room" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="640" as="sourcePoint"/>
+            <mxPoint x="220" y="530" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="220" y="720"/>
+              <mxPoint x="0" y="720"/>
+              <mxPoint x="0" y="530"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-assignment-room-label" value="n" style="edgeLabel;html=1;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];" edge="1" source="rel-assignment-room" target="rel-assignment-room" parent="rel-assignment-room">
+          <mxGeometry x="0.1" y="0.5" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Building → BuildingGenderPolicy (枚举关联) -->
+        <mxCell id="rel-building-policy" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontSize=12;fontColor=#333333;dashed=1;" edge="1" source="model-Building" target="model-BuildingGenderPolicy" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="220" as="sourcePoint"/>
+            <mxPoint x="260" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-building-policy-label" value="genderPolicy" style="edgeLabel;html=1;strokeColor=#82b366;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];dashed=1;" edge="1" source="rel-building-policy" target="rel-building-policy" parent="rel-building-policy">
+          <mxGeometry x="0.1" y="0.5" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Student → Gender (枚举关联) -->
+        <mxCell id="rel-student-gender" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;fontSize=12;fontColor=#333333;dashed=1;" edge="1" source="model-Student" target="model-Gender" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="110" as="sourcePoint"/>
+            <mxPoint x="260" y="120" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel-student-gender-label" value="gender" style="edgeLabel;html=1;strokeColor=#82b366;fontSize=12;fontColor=#333333;align=center;verticalAlign=middle;resizable=0;points=[];dashed=1;" edge="1" source="rel-student-gender" target="rel-student-gender" parent="rel-student-gender">
+          <mxGeometry x="-0.2" y="-0.5" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== Service 层依赖线 ===================== -->
+
+        <!-- BuildingService →(使用)→&gt; DatabaseConnection -->
+        <mxCell id="rel-bs-db" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-BuildingService" target="db-DatabaseConnection" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="110" as="sourcePoint"/>
+            <mxPoint x="1700" y="520" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- RoomService →(使用)→&gt; DatabaseConnection -->
+        <mxCell id="rel-rs-db" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-RoomService" target="db-DatabaseConnection" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="280" as="sourcePoint"/>
+            <mxPoint x="1700" y="550" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- RoomService →(使用)→&gt; BuildingService -->
+        <mxCell id="rel-rs-bs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-RoomService" target="service-BuildingService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1610" y="280" as="sourcePoint"/>
+            <mxPoint x="1610" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- StudentService →(使用)→&gt; DatabaseConnection -->
+        <mxCell id="rel-ss-db" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-StudentService" target="db-DatabaseConnection" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="500" as="sourcePoint"/>
+            <mxPoint x="1700" y="600" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormService →(使用)→&gt; DatabaseConnection -->
+        <mxCell id="rel-ds-db" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-DormService" target="db-DatabaseConnection" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1370" y="725" as="sourcePoint"/>
+            <mxPoint x="1700" y="650" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormService →(使用)→&gt; StudentService -->
+        <mxCell id="rel-ds-ss" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-DormService" target="service-StudentService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1610" y="700" as="sourcePoint"/>
+            <mxPoint x="1610" y="590" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormService →(使用)→&gt; BuildingService -->
+        <mxCell id="rel-ds-bs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-DormService" target="service-BuildingService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1640" y="710" as="sourcePoint"/>
+            <mxPoint x="1640" y="360" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormService →(使用)→&gt; RoomService -->
+        <mxCell id="rel-ds-rs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="service-DormService" target="service-RoomService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1630" y="750" as="sourcePoint"/>
+            <mxPoint x="1630" y="540" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== Repository 接口到实现 ===================== -->
+
+        <!-- JdbcBuildingRepository →(实现)→&gt; BuildingRepository -->
+        <mxCell id="rel-impl-br" value="implements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="repo-JdbcBuildingRepository" target="repo-BuildingRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="95" as="sourcePoint"/>
+            <mxPoint x="980" y="95" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- JdbcRoomRepository →(实现)→&gt; RoomRepository -->
+        <mxCell id="rel-impl-rr" value="implements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="repo-JdbcRoomRepository" target="repo-RoomRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="235" as="sourcePoint"/>
+            <mxPoint x="1020" y="235" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- JdbcStudentRepository →(实现)→&gt; StudentRepository -->
+        <mxCell id="rel-impl-sr" value="implements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="repo-JdbcStudentRepository" target="repo-StudentRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="375" as="sourcePoint"/>
+            <mxPoint x="1020" y="375" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- JdbcDormRepository →(实现)→&gt; DormRepository -->
+        <mxCell id="rel-impl-dr" value="implements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="repo-JdbcDormRepository" target="repo-DormRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="515" as="sourcePoint"/>
+            <mxPoint x="1040" y="515" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== DatabaseConnection 聚合 Repository ===================== -->
+
+        <!-- DatabaseConnection →(持有)→&gt; BuildingRepository -->
+        <mxCell id="rel-dc-br" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;" edge="1" source="db-DatabaseConnection" target="repo-BuildingRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="575" as="sourcePoint"/>
+            <mxPoint x="980" y="75" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DatabaseConnection →(持有)→&gt; RoomRepository -->
+        <mxCell id="rel-dc-rr" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;" edge="1" source="db-DatabaseConnection" target="repo-RoomRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="600" as="sourcePoint"/>
+            <mxPoint x="1020" y="220" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DatabaseConnection →(持有)→&gt; StudentRepository -->
+        <mxCell id="rel-dc-sr" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;" edge="1" source="db-DatabaseConnection" target="repo-StudentRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="625" as="sourcePoint"/>
+            <mxPoint x="1020" y="400" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DatabaseConnection →(持有)→&gt; DormRepository -->
+        <mxCell id="rel-dc-dr" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;" edge="1" source="db-DatabaseConnection" target="repo-DormRepository" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="650" as="sourcePoint"/>
+            <mxPoint x="1040" y="590" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== Handler 依赖 Service ===================== -->
+
+        <!-- DashboardHandler →(使用)→&gt; BuildingService -->
+        <mxCell id="rel-dh-bs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DashboardHandler" target="service-BuildingService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="370" as="sourcePoint"/>
+            <mxPoint x="1610" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DashboardHandler →(使用)→&gt; RoomService -->
+        <mxCell id="rel-dh-rs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DashboardHandler" target="service-RoomService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="390" as="sourcePoint"/>
+            <mxPoint x="1630" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DashboardHandler →(使用)→&gt; StudentService -->
+        <mxCell id="rel-dh-ss" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DashboardHandler" target="service-StudentService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="410" as="sourcePoint"/>
+            <mxPoint x="1630" y="505" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DashboardHandler →(使用)→&gt; DormService -->
+        <mxCell id="rel-dh-ds" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DashboardHandler" target="service-DormService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1700" y="430" as="sourcePoint"/>
+            <mxPoint x="1650" y="725" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- StudentCreateHandler →(使用)→&gt; StudentService -->
+        <mxCell id="rel-sch-ss" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-StudentCreateHandler" target="service-StudentService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="140" as="sourcePoint"/>
+            <mxPoint x="1630" y="505" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- BuildingCreateHandler →(使用)→&gt; BuildingService -->
+        <mxCell id="rel-bch-bs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-BuildingCreateHandler" target="service-BuildingService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="250" as="sourcePoint"/>
+            <mxPoint x="1610" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- RoomCreateHandler →(使用)→&gt; RoomService -->
+        <mxCell id="rel-rch-rs" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-RoomCreateHandler" target="service-RoomService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="360" as="sourcePoint"/>
+            <mxPoint x="1630" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormAssignHandler →(使用)→&gt; DormService -->
+        <mxCell id="rel-dah-ds" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DormAssignHandler" target="service-DormService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="470" as="sourcePoint"/>
+            <mxPoint x="1650" y="725" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- DormChangeHandler →(使用)→&gt; DormService -->
+        <mxCell id="rel-dch-ds" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="handler-DormChangeHandler" target="service-DormService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="590" as="sourcePoint"/>
+            <mxPoint x="1650" y="750" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== Main 到 Service 实例化 ===================== -->
+
+        <!-- Main →(实例化)→&gt; DatabaseConnection -->
+        <mxCell id="rel-main-dc" value="creates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="entry-Main" target="db-DatabaseConnection" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="745" as="sourcePoint"/>
+            <mxPoint x="1700" y="690" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Main →(实例化)→&gt; BuildingService -->
+        <mxCell id="rel-main-bs" value="creates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="entry-Main" target="service-BuildingService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="730" as="sourcePoint"/>
+            <mxPoint x="1610" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Main →(实例化)→&gt; RoomService -->
+        <mxCell id="rel-main-rs" value="creates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="entry-Main" target="service-RoomService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="750" as="sourcePoint"/>
+            <mxPoint x="1630" y="300" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Main →(实例化)→&gt; StudentService -->
+        <mxCell id="rel-main-ss" value="creates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="entry-Main" target="service-StudentService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="760" as="sourcePoint"/>
+            <mxPoint x="1630" y="505" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Main →(实例化)→&gt; DormService -->
+        <mxCell id="rel-main-ds" value="creates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;dashed=1;" edge="1" source="entry-Main" target="service-DormService" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2010" y="770" as="sourcePoint"/>
+            <mxPoint x="1650" y="725" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Main →(启动)→&gt; Router -->
+        <mxCell id="rel-main-router" value="starts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;fontSize=11;fontColor=#333333;" edge="1" source="entry-Main" target="entry-Router" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2210" y="745" as="sourcePoint"/>
+            <mxPoint x="2210" y="820" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Router →(注册)→&gt; DashboardHandler -->
+        <mxCell id="rel-router-dh" value="registers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;fontSize=10;fontColor=#333333;dashed=1;" edge="1" source="entry-Router" target="handler-DashboardHandler" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2210" y="840" as="sourcePoint"/>
+            <mxPoint x="1940" y="370" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===================== 颜色图例 ===================== -->
+        <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;strokeWidth=1;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="30" y="760" width="620" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;图例&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="765" width="60" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-model-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="790" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-model-text" value="Model 实体/视图对象" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="64" y="790" width="130" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-enum-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="210" y="790" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-enum-text" value="枚举 (Enum)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="234" y="790" width="80" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-repo-iface-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="330" y="790" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-repo-iface-text" value="Repository 接口" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="354" y="790" width="100" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-repo-impl-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="470" y="790" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-repo-impl-text" value="JDBC Repository 实现" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="494" y="790" width="130" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-service-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="40" y="830" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-service-text" value="Service 业务服务层" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="64" y="830" width="120" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-handler-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="190" y="830" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-handler-text" value="Handler HTTP 处理器" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="214" y="830" width="120" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-infra-color" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="340" y="830" width="18" height="14" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-infra-text" value="基础设施层 (Database/Main/Router)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="364" y="830" width="200" height="14" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

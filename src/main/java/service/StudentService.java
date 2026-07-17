@@ -59,4 +59,17 @@ public class StudentService {
     public List<StudentDormView> getStudentsByRoomId(long roomId) throws SQLException {
         return databaseConnection.studentRepository().findStudentsByRoom(roomId);
     }
+
+    // 删除学生：先确认学号存在，再删除学生及其关联住宿记录。
+    public Student deleteStudent(String studentId) throws SQLException {
+        if (studentId.isBlank()) {
+            throw new IllegalArgumentException("学号不能为空");
+        }
+        Student student = getStudent(studentId);
+        boolean deleted = databaseConnection.studentRepository().deleteById(studentId);
+        if (!deleted) {
+            throw new IllegalArgumentException("未找到学生: " + studentId);
+        }
+        return student;
+    }
 }

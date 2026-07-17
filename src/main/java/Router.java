@@ -1,10 +1,12 @@
 import com.sun.net.httpserver.HttpServer;
 import handler.BuildingCreateHandler;
+import handler.BuildingDeleteHandler;
 import handler.DashboardHandler;
 import handler.DormAssignHandler;
 import handler.DormChangeHandler;
 import handler.RoomCreateHandler;
 import handler.StudentCreateHandler;
+import handler.StudentDeleteHandler;
 import service.BuildingService;
 import service.DormService;
 import service.RoomService;
@@ -33,7 +35,9 @@ public final class Router {
 
         server.createContext("/", new DashboardHandler(buildingService, roomService, studentService, dormService));
         server.createContext("/students/create", new StudentCreateHandler(studentService));
+        server.createContext("/students/delete", new StudentDeleteHandler(studentService));
         server.createContext("/buildings/create", new BuildingCreateHandler(buildingService));
+        server.createContext("/buildings/delete", new BuildingDeleteHandler(buildingService));
         server.createContext("/rooms/create", new RoomCreateHandler(roomService));
         server.createContext("/dorms/assign", new DormAssignHandler(dormService));
         server.createContext("/dorms/change", new DormChangeHandler(dormService));

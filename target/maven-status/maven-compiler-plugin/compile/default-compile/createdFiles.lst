@@ -29,9 +29,11 @@ repo\jdbc\JdbcBuildingRepository.class
 handler\RoomCreateHandler.class
 ui\BuildingMenu.class
 service\DormService.class
+handler\StudentDeleteHandler.class
 database\DatabaseConnection.class
 handler\DashboardHandler.class
 repo\interfaces\StudentRepository.class
 handler\DormChangeHandler.class
 ui\ConsoleUtils.class
 model\Gender.class
+handler\BuildingDeleteHandler.class

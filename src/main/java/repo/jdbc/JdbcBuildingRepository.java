@@ -81,6 +81,15 @@ public class JdbcBuildingRepository implements BuildingRepository {
         }
     }
 
+    @Override
+    public boolean deleteById(long buildingId) throws SQLException {
+        String sql = "DELETE FROM buildings WHERE building_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, buildingId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
     private Building map(ResultSet resultSet) throws SQLException {
         // 表中保存枚举常量名；转换集中在这里，避免向 BuildingService 泄露存储格式。
         return new Building(

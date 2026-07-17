@@ -26,6 +26,7 @@ public final class BuildingMenu {
             List<String[]> rows = new ArrayList<>();
             rows.add(new String[]{"[1]", "新增宿舍楼"});
             rows.add(new String[]{"[2]", "查看宿舍楼列表"});
+            rows.add(new String[]{"[3]", "删除宿舍楼"});
             rows.add(new String[]{"[0]", "返回上级菜单"});
             ConsoleUtils.printTable(headers, rows);
             ConsoleUtils.printSeparator();
@@ -33,6 +34,7 @@ public final class BuildingMenu {
             switch (ConsoleUtils.readInt("请选择操作")) {
                 case 1 -> createBuilding(buildingService);
                 case 2 -> listBuildings(buildingService);
+                case 3 -> deleteBuilding(buildingService);
                 case 0 -> {
                     return;
                 }
@@ -71,6 +73,21 @@ public final class BuildingMenu {
             });
         }
         ConsoleUtils.printTable(headers, rows);
+        ConsoleUtils.waitForEnter();
+    }
+
+    // 根据楼栋 ID 删除宿舍楼；数据库会级联删除其房间和住宿记录。
+    private static void deleteBuilding(BuildingService buildingService) throws SQLException {
+        ConsoleUtils.printSubHeader("删除宿舍楼");
+        try {
+            long buildingId = Long.parseLong(ConsoleUtils.readLine("输入要删除的宿舍楼 ID").trim());
+            Building building = buildingService.deleteBuilding(buildingId);
+            ConsoleUtils.printSuccess("删除成功: " + building.buildingName() + "（ID " + building.buildingId() + "）");
+        } catch (NumberFormatException exception) {
+            ConsoleUtils.printError("删除失败: 宿舍楼 ID 必须是数字");
+        } catch (IllegalArgumentException exception) {
+            ConsoleUtils.printError("删除失败: " + exception.getMessage());
+        }
         ConsoleUtils.waitForEnter();
     }
 }

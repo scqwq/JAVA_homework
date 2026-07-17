@@ -68,6 +68,15 @@ public class JdbcStudentRepository implements StudentRepository {
     }
 
     @Override
+    public boolean deleteById(String studentId) throws SQLException {
+        String sql = "DELETE FROM students WHERE student_id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, studentId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    @Override
     public List<StudentDormView> findStudentsByRoom(long roomId) throws SQLException {
         // DormService 需要一次取到学生、楼、房间和床号，避免业务层自行拼接多次查询；结果按床号返回给 UI。
         String sql = """

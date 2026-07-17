@@ -79,7 +79,7 @@ cp .env.example .env
 2. 编辑 `.env`，填写数据库连接，例如：
 
 ```env
-APP_PORT=8080
+APP_PORT=23333
 DATABASE_DSN=jdbc:postgresql://127.0.0.1:5432/JAVA?user=postgres&password=123456
 PGDSN=
 MYSQL_DSN=
@@ -88,7 +88,8 @@ MYSQL_DSN=
 3. 一键编译并启动网站：
 
 ```bash
-bash scripts/run-ecs.sh
+bash scripts/run-ecs.sh  
+bash scripts/run-ecs.sh --daemon  # 可在后台与访问
 ```
 
 4. 启动成功后，在浏览器访问：
@@ -97,7 +98,7 @@ bash scripts/run-ecs.sh
 http://服务器公网IP:8080
 ```
 
-如果 ECS 开了防火墙或华为云安全组，记得放行 `8080` 端口。
+如果 ECS 开了防火墙或安全组，记得放行对应的端口。
 
 ### ECS 上如何测试
 
@@ -115,7 +116,7 @@ curl http://127.0.0.1:8080
 http://ECS公网IP:8080
 ```
 
-如果本机能通、外网不能通，通常是华为云安全组或服务器防火墙没有放行 `8080`。
+如果本机能通、外网不能通，通常是安全组或服务器防火墙没有放行 `8080`。
 
 ## 演示数据
 

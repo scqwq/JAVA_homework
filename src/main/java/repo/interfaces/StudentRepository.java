@@ -33,6 +33,12 @@ public interface StudentRepository {
     Optional<Student> findById(String studentId) throws SQLException;
 
     /**
+     * 给 StudentService 删除指定学号的学生资料。
+     * 返回 true 表示实际删除了记录；若返回 false，则说明数据层中不存在该学号。
+     */
+    boolean deleteById(String studentId) throws SQLException;
+
+    /**
      * 给 DormService 的“按宿舍查学生”功能提供跨表展示数据。
      * 返回列表按床号排列；空列表表示当前房间无人入住，不等同于房间不存在。
      */

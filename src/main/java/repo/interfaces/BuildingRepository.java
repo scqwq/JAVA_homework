@@ -36,5 +36,11 @@ public interface BuildingRepository {
      * 这里只负责按业务编号查询；是否提示用户、是否允许继续由业务层决定。
      */
     Optional<Building> findByCode(String buildingCode) throws SQLException;
+
+    /**
+     * 给 BuildingService 删除指定宿舍楼。
+     * 返回 true 表示实际删除成功；若返回 false，则说明该 ID 不存在。
+     */
+    boolean deleteById(long buildingId) throws SQLException;
 }
 

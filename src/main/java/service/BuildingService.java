@@ -41,4 +41,14 @@ public class BuildingService {
                 .findById(buildingId)
                 .orElseThrow(() -> new IllegalArgumentException("未找到宿舍楼: " + buildingId));
     }
+
+    // 删除宿舍楼：先确认楼栋存在，再删除该楼及其级联房间、住宿分配。
+    public Building deleteBuilding(long buildingId) throws SQLException {
+        Building building = getBuilding(buildingId);
+        boolean deleted = databaseConnection.buildingRepository().deleteById(buildingId);
+        if (!deleted) {
+            throw new IllegalArgumentException("未找到宿舍楼: " + buildingId);
+        }
+        return building;
+    }
 }

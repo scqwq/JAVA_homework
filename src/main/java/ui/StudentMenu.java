@@ -28,7 +28,8 @@ public final class StudentMenu {
             List<String[]> rows = new ArrayList<>();
             rows.add(new String[]{"[1]", "新增学生"});
             rows.add(new String[]{"[2]", "查看学生列表"});
-            rows.add(new String[]{"[3]", "根据学生查找宿舍"});
+            rows.add(new String[]{"[3]", "删除学生"});
+            rows.add(new String[]{"[4]", "根据学生查找宿舍"});
             rows.add(new String[]{"[0]", "返回上级菜单"});
             ConsoleUtils.printTable(headers, rows);
             ConsoleUtils.printSeparator();
@@ -36,7 +37,8 @@ public final class StudentMenu {
             switch (ConsoleUtils.readInt("请选择操作")) {
                 case 1 -> createStudent(studentService);
                 case 2 -> listStudents(studentService);
-                case 3 -> findDormByStudent(dormService);
+                case 3 -> deleteStudent(studentService);
+                case 4 -> findDormByStudent(dormService);
                 case 0 -> {
                     return;
                 }
@@ -78,6 +80,19 @@ public final class StudentMenu {
             });
         }
         ConsoleUtils.printTable(headers, rows);
+        ConsoleUtils.waitForEnter();
+    }
+
+    // 根据学号删除学生；若学生已有住宿分配，将依赖数据库外键级联一并删除。
+    private static void deleteStudent(StudentService studentService) throws SQLException {
+        ConsoleUtils.printSubHeader("删除学生");
+        try {
+            String studentId = ConsoleUtils.readLine("输入要删除的学号");
+            Student student = studentService.deleteStudent(studentId);
+            ConsoleUtils.printSuccess("删除成功: " + student.studentName() + "（" + student.studentId() + "）");
+        } catch (IllegalArgumentException exception) {
+            ConsoleUtils.printError("删除失败: " + exception.getMessage());
+        }
         ConsoleUtils.waitForEnter();
     }
 

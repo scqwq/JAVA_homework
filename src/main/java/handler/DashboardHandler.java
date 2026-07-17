@@ -192,7 +192,7 @@ public class DashboardHandler extends BaseHandler {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>学生宿舍管理系统</title>
+                    <title>琉璃子管理系统</title>
                     <style>
                         :root {
                             --bg: #f4f6f8;
@@ -393,10 +393,19 @@ public class DashboardHandler extends BaseHandler {
                         button.secondary:hover {
                             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
                         }
+                        button.danger {
+                            background: var(--danger);
+                        }
+                        button.danger:hover {
+                            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+                        }
                         .actions {
                             display: flex;
                             justify-content: flex-end;
                             margin-top: 8px;
+                        }
+                        .inline-form {
+                            margin: 0;
                         }
                         .occupancy-summary {
                             display: grid;
@@ -522,8 +531,8 @@ public class DashboardHandler extends BaseHandler {
                 <header>
                     <div class="header-inner">
                         <div>
-                            <h1>🏫 学生宿舍管理系统</h1>
-                            <div class="subtitle">沿用当前项目稳定逻辑，前端布局切换为 javahw 风格后台。</div>
+                            <h1>🏫 琉璃子管理系统</h1>
+                            <div class="subtitle">沿用当前项目稳定逻辑，当前 Web 呈现切换为琉璃子管理系统。</div>
                         </div>
                         <nav>
                 """);
@@ -974,9 +983,17 @@ public class DashboardHandler extends BaseHandler {
                     .append(escapeHtml(student.grade()))
                     .append("</td><td>")
                     .append(escapeHtml(student.gender().label()))
+                    .append("</td><td>")
+                    .append("<form method=\"post\" action=\"/students/delete\" class=\"inline-form\" ")
+                    .append("onsubmit=\"return confirm('确认删除学生 ").append(escapeHtml(student.studentName()))
+                    .append("（").append(escapeHtml(student.studentId())).append("）吗？');\">")
+                    .append("<input type=\"hidden\" name=\"tab\" value=\"students\">")
+                    .append("<input type=\"hidden\" name=\"studentId\" value=\"").append(escapeHtml(student.studentId())).append("\">")
+                    .append("<button type=\"submit\" class=\"danger\">删除</button>")
+                    .append("</form>")
                     .append("</td></tr>");
         }
-        return "<div class=\"scroll-x\"><table><thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>年级</th><th>性别</th></tr></thead><tbody>"
+        return "<div class=\"scroll-x\"><table><thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>年级</th><th>性别</th><th>操作</th></tr></thead><tbody>"
                 + rows + "</tbody></table></div>";
     }
 
@@ -994,9 +1011,17 @@ public class DashboardHandler extends BaseHandler {
                     .append(escapeHtml(building.buildingName()))
                     .append("</td><td><span class=\"pill accent\">")
                     .append(escapeHtml(building.genderPolicy().label()))
-                    .append("</span></td></tr>");
+                    .append("</span></td><td>")
+                    .append("<form method=\"post\" action=\"/buildings/delete\" class=\"inline-form\" ")
+                    .append("onsubmit=\"return confirm('确认删除楼栋 ").append(escapeHtml(building.buildingName()))
+                    .append("（ID ").append(building.buildingId()).append("）吗？删除后其房间和住宿记录也会一并移除。');\">")
+                    .append("<input type=\"hidden\" name=\"tab\" value=\"buildings\">")
+                    .append("<input type=\"hidden\" name=\"buildingId\" value=\"").append(building.buildingId()).append("\">")
+                    .append("<button type=\"submit\" class=\"danger\">删除</button>")
+                    .append("</form>")
+                    .append("</td></tr>");
         }
-        return "<div class=\"scroll-x\"><table><thead><tr><th>ID</th><th>编号</th><th>名称</th><th>入住策略</th></tr></thead><tbody>"
+        return "<div class=\"scroll-x\"><table><thead><tr><th>ID</th><th>编号</th><th>名称</th><th>入住策略</th><th>操作</th></tr></thead><tbody>"
                 + rows + "</tbody></table></div>";
     }
 
